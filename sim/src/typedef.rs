@@ -1,10 +1,6 @@
 pub struct Road {
-    lanes: Vec<Lane>,
-}
-
-pub struct Lane {
     vehicles: Vec<Vehicle>,
-    max_velocity: Velocity,
+    speed_per_lane: Vec<Velocity>,
 }
 
 pub struct Vehicle {
@@ -20,7 +16,5 @@ pub struct Position {
 pub struct Velocity(u8);
 
 impl Road {}
-
-impl Lane {}
 
 impl Vehicle {}
