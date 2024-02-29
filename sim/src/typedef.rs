@@ -10,11 +10,18 @@ pub struct Vehicle {
 
 pub struct Position {
     x: u128,
-    y: u128,
+    y: u8,
 }
 
 pub struct Velocity(u8);
 
-impl Road {}
+impl Road {
+    pub fn get_vehicles_in_lane(&self, lane: u8) -> Vec<&Vehicle> {
+        self.vehicles
+            .iter()
+            .filter(|vehicle| vehicle.position.y == lane)
+            .collect::<Vec<_>>()
+    }
+}
 
 impl Vehicle {}
