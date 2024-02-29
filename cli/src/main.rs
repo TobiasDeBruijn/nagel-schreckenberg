@@ -1,9 +1,13 @@
+use clap::Parser;
 use color_eyre::Result;
 use std::env::{set_var, var};
 use tracing_subscriber::fmt::layer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{registry, EnvFilter};
+
+#[derive(Parser)]
+pub struct Args {}
 
 fn main() -> Result<()> {
     color_eyre::install()?;
@@ -16,6 +20,8 @@ fn main() -> Result<()> {
         .with(layer().compact())
         .with(EnvFilter::from_default_env())
         .init();
+
+    let args = Args::parse();
 
     Ok(())
 }
