@@ -91,6 +91,21 @@ impl Road {
             })
             .collect()
     }
+
+    pub fn pretty_print(&self) {
+        let mut road = vec![vec![' '; 100]; 3];
+        for vehicle in &self.vehicles {
+            road[vehicle.position.y as usize][vehicle.position.x as usize] = 'o';
+        }
+        println!("Road:");
+        //Print '-' 100 times
+        println!("{}", "-".repeat(100));
+        for row in road {
+            println!("{}", row.into_iter().collect::<String>());
+        }
+        //Print '-' 100 times
+        println!("{}", "-".repeat(100));
+    }
 }
 
 impl Vehicle {
