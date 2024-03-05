@@ -92,19 +92,42 @@ impl Road {
             .collect()
     }
 
+    fn get_length_of_road(&self) -> u128 {
+        self.vehicles
+            .iter()
+            .map(|vehicle| vehicle.position.x)
+            .max()
+            .unwrap_or(0)
+    }
+
     pub fn pretty_print(&self) {
-        let mut road = vec![vec![' '; 100]; 3];
+        const SIDE_OF_ROAD_STR: &str = "#";
+        const ROAD_MARGIN: usize = 20;
+        let road_length = self.get_length_of_road() as usize + ROAD_MARGIN * 2;
+
+        let mut road = vec![vec![' '; road_length]; 3];
+
+        //Print a '-' every 4th position in the second lane of the road
+        for (idx, char) in road[1].iter_mut().enumerate() {
+            if idx % 4 == 0 {
+                *char = '-';
+            }
+        }
+
         for vehicle in &self.vehicles {
-            road[vehicle.position.y as usize][vehicle.position.x as usize] = 'o';
+            road[vehicle.position.y as usize][vehicle.position.x as usize + ROAD_MARGIN] = 'o';
         }
         println!("Road:");
-        //Print '-' 100 times
-        println!("{}", "-".repeat(100));
+
+        //Print SIDE_OF_ROAD_CHAR 100 times
+        println!("{}", SIDE_OF_ROAD_STR.repeat(road_length));
+
         for row in road {
             println!("{}", row.into_iter().collect::<String>());
         }
-        //Print '-' 100 times
-        println!("{}", "-".repeat(100));
+
+        //Print SIDE_OF_ROAD_CHAR 100 times
+        println!("{}", SIDE_OF_ROAD_STR.repeat(road_length));
     }
 }
 
