@@ -1,29 +1,33 @@
-use std::ops::{Add, AddAssign, Deref, Sub};
+use std::ops::{AddAssign, Deref};
 
 pub struct Road {
     vehicles: Vec<Vehicle>,
     speed_per_lane: Vec<Velocity>,
 }
 
+#[derive(Debug)]
 pub struct Vehicle {
     pub position: Position,
     pub velocity: Velocity,
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Position {
     pub x: u128,
     pub y: u8,
 }
 
-
 impl Position {
+    pub fn new(x: u128, y: u8) -> Self {
+        Self { x, y }
+    }
+
     pub fn distance_1d(&self, rhs: &Self) -> u128 {
-        self.x - rhs.x
+        rhs.x - self.x
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Velocity(u8);
 
 impl AddAssign for Velocity {
@@ -51,6 +55,13 @@ impl Deref for Velocity {
 }
 
 impl Road {
+    pub fn new(vehicles: Vec<Vehicle>, speed_per_lane: Vec<Velocity>) -> Self {
+        Self {
+            vehicles,
+            speed_per_lane,
+        }
+    }
+
     pub fn get_vehicles_in_lane(&self, lane: u8) -> Vec<&Vehicle> {
         self.vehicles
             .iter()
@@ -82,4 +93,11 @@ impl Road {
     }
 }
 
-impl Vehicle {}
+impl Vehicle {
+    pub fn new(position: Position) -> Self {
+        Self {
+            position,
+            velocity: Velocity::new(0),
+        }
+    }
+}

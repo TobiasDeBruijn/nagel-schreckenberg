@@ -1,5 +1,5 @@
 use crate::model::Model;
-use crate::transformers::{Accelerator, Decelerator, Randomizer, Transformer};
+use crate::transformers::{Accelerator, Decelerator, Randomizer};
 use crate::typedef::Road;
 
 mod model;

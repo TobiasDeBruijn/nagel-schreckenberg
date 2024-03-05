@@ -4,15 +4,19 @@ use crate::typedef::{Road, Velocity};
 pub struct Accelerator;
 
 impl Transformer<Road> for Accelerator {
-    fn transform(self, r: Road) -> Road {
-        for lane in 0..=3_u8 {
-            r = apply_lane(r)
+    fn transform(self, mut r: Road) -> Road {
+        for lane in 0..3_u8 {
+            apply_lane(&mut r, lane);
         }
+
+        r
     }
 }
 
 fn apply_lane(r: &mut Road, lane: u8) {
-    let vmax = r.get_max_velocity_in_lane(lane).expect("Getting vmax for a lane");
+    let vmax = r
+        .get_max_velocity_in_lane(lane)
+        .expect("Getting vmax for a lane");
     let mut vs = r.get_vehicles_in_lane_mut(lane);
 
     let to_accelerate = vs
@@ -21,15 +25,42 @@ fn apply_lane(r: &mut Road, lane: u8) {
         .filter(|vs| {
             let v = &vs[0];
             match vs.get(1) {
-                Some(vnext) => v.velocity < vmax && v.position.distance_1d(&vnext.position) > (v.velocity.into_inner() + 1) as u128,
-                None => v.velocity < vmax
+                Some(vnext) => {
+                    v.velocity < vmax
+                        && v.position.distance_1d(&vnext.position)
+                            > (v.velocity.into_inner() + 1) as u128
+                }
+                None => v.velocity < vmax,
             }
         })
         .map(|f| f[0].position.clone())
         .collect::<Vec<_>>();
 
-    vs
-        .iter_mut()
+    vs.iter_mut()
         .filter(|f| to_accelerate.contains(&f.position))
         .for_each(|f| f.velocity += Velocity::new(1));
+}
+
+#[cfg(test)]
+mod test {
+    use crate::transformers::accelerate::apply_lane;
+    use crate::typedef::{Position, Road, Vehicle, Velocity};
+
+    #[test]
+    fn simple() {
+        let mut r = Road::new(
+            vec![
+                Vehicle::new(Position::new(0, 0)),
+                Vehicle::new(Position::new(20, 0)),
+            ],
+            vec![Velocity::new(10)],
+        );
+
+        for _ in 0..=10 {
+            apply_lane(&mut r, 0);
+        }
+
+        let lane = r.get_vehicles_in_lane(0);
+        assert_eq!(lane[0].velocity, Velocity::new(10));
+    }
 }
