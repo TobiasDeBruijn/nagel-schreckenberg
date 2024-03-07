@@ -16,6 +16,7 @@ impl Transformer<Road> for Decelerator {
 
 fn apply_lane(r: &mut Road, lane: u8) {
     let mut vs = r.get_vehicles_in_lane_mut(lane);
+    vs.sort_by(|a, b| a.position.cmp(&b.position));
 
     // Figure out which vehicle needs to be slowed down (due to other traffic ahead)
     // Return those as a HashMap<Position, Velocity>, where the value will be the new velocity

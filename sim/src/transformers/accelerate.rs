@@ -18,13 +18,13 @@ fn apply_lane(r: &mut Road, lane: u8) {
         .get_max_velocity_in_lane(lane)
         .expect("Getting vmax for a lane");
     let mut vs = r.get_vehicles_in_lane_mut(lane);
+    vs.sort_by(|a, b| a.position.cmp(&b.position));
 
     let mut to_accelerate = vs
         .windows(2)
         .into_iter()
         .filter(|vs| {
             let v = &vs[0];
-            println!("vpos {} {}", v.position.x, v.position.y);
             match vs.get(1) {
                 Some(vnext) => {
                     v.velocity < vmax

@@ -27,7 +27,7 @@ fn main() -> Result<()> {
 
     //Create road for testing the printing
     let mut road = make_test_road();
-    for _ in 0..6 {
+    for _ in 0..100 {
         road = sim::step(road);
         road.pretty_print();
     }
@@ -46,10 +46,6 @@ fn make_test_road() -> Road {
             Vehicle::new(Position::new(1, 2)),
             Vehicle::new(Position::new(100, 2)),
         ],
-        vec![
-            Velocity::new(5),
-            Velocity::new(5),
-            Velocity::new(5),
-        ],
+        vec![Velocity::new(5), Velocity::new(5), Velocity::new(5)],
     )
 }

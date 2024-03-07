@@ -17,13 +17,19 @@ pub struct Position {
     pub y: u8,
 }
 
+impl AddAssign<Velocity> for Position {
+    fn add_assign(&mut self, rhs: Velocity) {
+        self.x += rhs.into_inner() as u128;
+    }
+}
+
 impl Position {
     pub fn new(x: u128, y: u8) -> Self {
         Self { x, y }
     }
 
     pub fn distance_1d(&self, rhs: &Self) -> u128 {
-        (rhs.x as i128 - self.x as i128).abs() as u128
+        (self.x as i128 - rhs.x as i128).abs() as u128
     }
 }
 
@@ -76,6 +82,10 @@ impl Road {
             .collect::<Vec<_>>()
     }
 
+    pub fn get_vehicles_mut(&mut self) -> &mut [Vehicle] {
+        self.vehicles.as_mut_slice()
+    }
+
     pub fn get_max_velocity_in_lane(&self, lane: u8) -> Option<Velocity> {
         self.speed_per_lane.get(lane as usize).cloned()
     }
@@ -93,17 +103,25 @@ impl Road {
     }
 
     fn get_length_of_road(&self) -> u128 {
-        self.vehicles
+        let xs = self
+            .vehicles
             .iter()
-            .map(|vehicle| vehicle.position.x)
-            .max()
-            .unwrap_or(0)
+            .map(|v| v.position.x)
+            .collect::<Vec<_>>();
+
+        xs.iter().max().unwrap_or(&0_u128) - xs.iter().min().unwrap_or(&0_u128)
     }
 
     pub fn pretty_print(&self) {
         const SIDE_OF_ROAD_STR: &str = "#";
-        const ROAD_MARGIN: usize = 20;
-        let road_length = self.get_length_of_road() as usize + ROAD_MARGIN * 2;
+
+        let road_start = self
+            .vehicles
+            .iter()
+            .map(|x| x.position.x)
+            .min()
+            .unwrap_or_default() as usize;
+        let road_length = self.get_length_of_road() as usize;
 
         let mut road = vec![vec![" ".to_string(); road_length]; 3];
 
@@ -115,7 +133,8 @@ impl Road {
         }
 
         for vehicle in &self.vehicles {
-            road[vehicle.position.y as usize][vehicle.position.x as usize + ROAD_MARGIN] = vehicle.velocity.into_inner().to_string();
+            let x = vehicle.position.x as usize + road_start;
+            road[vehicle.position.y as usize][x] = vehicle.velocity.into_inner().to_string();
         }
         println!("Road:");
 
