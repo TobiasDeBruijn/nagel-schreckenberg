@@ -144,6 +144,12 @@ impl Road {
             .collect()
     }
 
+    pub fn get_strides(&self) -> String {
+        (0..self.len)
+            .map(|i| if i % 4 == 0 { "-" } else { " " }.to_string())
+            .collect()
+    }
+
     pub fn pretty_print(&self) {
         print!("\x1B[2J\x1B[1;1H");
 
@@ -151,9 +157,11 @@ impl Road {
 
         let s = vec![
             SIDE_OF_ROAD_STR.repeat(self.len as usize),
-            self.pretty_print_lane(2, false),
-            self.pretty_print_lane(1, true),
-            self.pretty_print_lane(0, false),
+            self.pretty_print_lane(2, false) + "\t3",
+            self.get_strides(),
+            self.pretty_print_lane(1, false) + "\t2",
+            self.get_strides(),
+            self.pretty_print_lane(0, false) + "\t1",
             SIDE_OF_ROAD_STR.repeat(self.len as usize),
         ]
         .join("\n");
@@ -161,7 +169,7 @@ impl Road {
         println!("{s}");
 
         println!(
-            "Average speed:        {:.2}",
+            "Average speed:\t\t\t{:.2}",
             self.vehicles
                 .iter()
                 .map(|v| v.velocity.into_inner() as f32)
@@ -169,7 +177,30 @@ impl Road {
                 / self.vehicles.len() as f32
         );
 
+        self.print_lane_speed_avg(0);
+        self.print_lane_speed_avg(1);
+        self.print_lane_speed_avg(2);
+
         stdout().flush().expect("Flush stdout");
+    }
+
+    fn print_lane_speed_avg(&self, lane: u8) {
+        let vs = self
+            .vehicles
+            .iter()
+            .filter(|v| v.position.y == lane)
+            .collect::<Vec<_>>();
+        let avg = vs
+            .iter()
+            .map(|v| v.velocity.into_inner() as f32)
+            .sum::<f32>()
+            / vs.len() as f32;
+
+        println!(
+            "Average speed per lane {}:\t{:.2}",
+            lane + 1,
+            if avg.is_nan() { 0.0 } else { avg }
+        );
     }
 }
 
