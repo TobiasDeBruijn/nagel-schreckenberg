@@ -2,7 +2,7 @@ use std::ops::{AddAssign, Deref};
 
 pub struct Road {
     pub len: u8,
-    vehicles: Vec<Vehicle>,
+    pub vehicles: Vec<Vehicle>,
     speed_per_lane: Vec<Velocity>,
 }
 
@@ -10,6 +10,7 @@ pub struct Road {
 pub struct Vehicle {
     pub position: Position,
     pub velocity: Velocity,
+    pub move_left_chance: f32,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -145,10 +146,11 @@ impl Road {
 }
 
 impl Vehicle {
-    pub fn new(position: Position) -> Self {
+    pub fn new(position: Position, move_left_chance: f32) -> Self {
         Self {
             position,
             velocity: Velocity::new(0),
+            move_left_chance,
         }
     }
 }
