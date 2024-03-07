@@ -23,7 +23,7 @@ impl Position {
     }
 
     pub fn distance_1d(&self, rhs: &Self) -> u128 {
-        rhs.x - self.x
+        (rhs.x as i128 - self.x as i128).abs() as u128
     }
 }
 
@@ -105,17 +105,17 @@ impl Road {
         const ROAD_MARGIN: usize = 20;
         let road_length = self.get_length_of_road() as usize + ROAD_MARGIN * 2;
 
-        let mut road = vec![vec![' '; road_length]; 3];
+        let mut road = vec![vec![" ".to_string(); road_length]; 3];
 
         //Print a '-' every 4th position in the second lane of the road
         for (idx, char) in road[1].iter_mut().enumerate() {
             if idx % 4 == 0 {
-                *char = '-';
+                *char = "-".to_string();
             }
         }
 
         for vehicle in &self.vehicles {
-            road[vehicle.position.y as usize][vehicle.position.x as usize + ROAD_MARGIN] = 'o';
+            road[vehicle.position.y as usize][vehicle.position.x as usize + ROAD_MARGIN] = vehicle.velocity.into_inner().to_string();
         }
         println!("Road:");
 
