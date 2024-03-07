@@ -10,9 +10,9 @@ pub fn step(road: Road) -> Road {
     Model::new(road)
         .apply(Accelerator)
         .apply(Decelerator)
-        .apply(Mover)
-        .apply(Recycler)
         .apply(Randomizer)
         .apply(LaneMover)
+        .apply(Mover)
+        .apply(Recycler)
         .finish()
 }

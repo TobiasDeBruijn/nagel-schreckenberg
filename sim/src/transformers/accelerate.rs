@@ -1,3 +1,4 @@
+use tracing::trace;
 use crate::transformers::Transformer;
 use crate::typedef::{Road, Velocity};
 
@@ -42,6 +43,8 @@ fn apply_lane(r: &mut Road, lane: u8) {
             Some(_) | None => {}
         }
     }
+
+    trace!("Accelerating {} vehicles", to_accelerate.len());
 
     vs.iter_mut()
         .filter(|f| to_accelerate.contains(&f.position))

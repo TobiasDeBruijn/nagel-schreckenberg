@@ -1,6 +1,7 @@
 use crate::transformers::Transformer;
 use crate::typedef::{Road, Velocity};
 use std::collections::HashMap;
+use tracing::trace;
 
 pub struct Decelerator;
 
@@ -28,7 +29,10 @@ fn apply_lane(r: &mut Road, lane: u8) {
             match vs.get(1) {
                 Some(vnext) => {
                     let delta_x = v.position.distance_1d(&vnext.position);
-                    if delta_x <= v.velocity.into_inner() {
+                    trace!("dx : {delta_x}");
+                    trace!("v  : {}", v.velocity.into_inner());
+
+                    if delta_x <= v.velocity.into_inner() && v.velocity.into_inner() != 0{
                         (v.position.clone(), Velocity::new(delta_x as u8 - 1))
                     } else {
                         (v.position.clone(), v.velocity)

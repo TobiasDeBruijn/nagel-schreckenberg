@@ -9,21 +9,28 @@ use tracing_subscriber::{registry, EnvFilter};
 use sim::typedef::{Position, Road, Vehicle, Velocity};
 
 #[derive(Parser)]
-pub struct Args {}
+pub struct Args {
+    #[clap(short)]
+    #[clap(default_value = "false")]
+    verbose: bool
+}
 
 fn main() -> Result<()> {
     color_eyre::install()?;
+    let args = Args::parse();
 
     if var("RUST_LOG").is_err() {
-        set_var("RUST_LOG", "INFO");
+        if args.verbose {
+            set_var("RUST_LOG", "TRACE");
+        } else {
+            set_var("RUST_LOG", "INFO");
+        }
     }
 
     registry()
         .with(layer().compact())
         .with(EnvFilter::from_default_env())
         .init();
-
-    let _args = Args::parse();
 
     //Create road for testing the printing
     let mut road = make_test_road();
