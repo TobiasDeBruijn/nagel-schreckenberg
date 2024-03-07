@@ -46,10 +46,10 @@ fn make_test_road() -> Road {
     Road::new(
         100,
         0.0,
-        (0..20)
+        (0..25)
             .into_iter()
             .map(|x| Vehicle::new(Position::new(x, 0), 0.9, 0.1))
             .collect::<Vec<_>>(),
-        vec![Velocity::new(5), Velocity::new(5), Velocity::new(5)],
+        vec![Velocity::new(30), Velocity::new(30), Velocity::new(30)],
     )
 }

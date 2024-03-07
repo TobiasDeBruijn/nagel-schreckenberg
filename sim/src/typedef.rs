@@ -145,7 +145,8 @@ impl Road {
     }
 
     pub fn pretty_print(&self) {
-        print!("{esc}c", esc = 27 as char);
+        print!("\x1B[2J\x1B[1;1H");
+
         const SIDE_OF_ROAD_STR: &str = "#";
 
         let s = vec![
@@ -158,6 +159,15 @@ impl Road {
         .join("\n");
 
         println!("{s}");
+
+        println!(
+            "Average speed:        {:.2}",
+            self.vehicles
+                .iter()
+                .map(|v| v.velocity.into_inner() as f32)
+                .sum::<f32>()
+                / self.vehicles.len() as f32
+        );
 
         stdout().flush().expect("Flush stdout");
     }
