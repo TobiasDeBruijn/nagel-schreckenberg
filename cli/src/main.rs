@@ -27,7 +27,7 @@ fn main() -> Result<()> {
 
     //Create road for testing the printing
     let mut road = make_test_road();
-    for _ in 0..100 {
+    loop {
         road = sim::step(road);
         road.pretty_print();
     }

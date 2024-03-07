@@ -114,41 +114,33 @@ impl Road {
         xs.iter().max().unwrap_or(&0_u128) - xs.iter().min().unwrap_or(&0_u128)
     }
 
+    pub fn pretty_print_lane(&self, lane: u8, strides: bool) -> String {
+        (0..self.len).into_iter()
+            .map(|f| match self.vehicles.iter().find(|v| v.position.x == f && v.position.y == lane) {
+                Some(v) => v.velocity.into_inner().to_string(),
+                None => " ".to_string()
+            })
+            .enumerate()
+            .map(|(idx, c)| if strides && idx % 4 == 0 && c == " " {
+                "-".to_string()
+            } else {
+                c
+            })
+            .collect()
+    }
+
     pub fn pretty_print(&self) {
         const SIDE_OF_ROAD_STR: &str = "#";
 
-        let road_start = self
-            .vehicles
-            .iter()
-            .map(|x| x.position.x)
-            .min()
-            .unwrap_or_default() as usize;
-        let road_length = self.get_length_of_road() as usize;
+        let s = vec![
+            SIDE_OF_ROAD_STR.repeat(self.len as usize),
+            self.pretty_print_lane(2, false),
+            self.pretty_print_lane(1, true),
+            self.pretty_print_lane(0, false),
+            SIDE_OF_ROAD_STR.repeat(self.len as usize),
+        ].join("\n");
 
-        let mut road = vec![vec![" ".to_string(); road_length + 2]; 3];
-
-        //Print a '-' every 4th position in the second lane of the road
-        for (idx, char) in road[1].iter_mut().enumerate() {
-            if idx % 4 == 0 {
-                *char = "-".to_string();
-            }
-        }
-
-        for vehicle in &self.vehicles {
-            let x = vehicle.position.x as usize + road_start;
-            road[vehicle.position.y as usize][x] = vehicle.velocity.into_inner().to_string();
-        }
-        println!("Road:");
-
-        //Print SIDE_OF_ROAD_CHAR 100 times
-        println!("{}", SIDE_OF_ROAD_STR.repeat(road_length));
-
-        for row in road {
-            println!("{}", row.into_iter().collect::<String>());
-        }
-
-        //Print SIDE_OF_ROAD_CHAR 100 times
-        println!("{}", SIDE_OF_ROAD_STR.repeat(road_length));
+        println!("{s}");
     }
 }
 
