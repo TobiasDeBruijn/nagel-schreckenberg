@@ -1,7 +1,7 @@
 use std::ops::{AddAssign, Deref};
 
 pub struct Road {
-    pub road_length: u32,
+    pub length: u32,
     pub vehicles: Vec<Vehicle>,
     pub speed_per_lane: Vec<Velocity>,
 }
@@ -62,9 +62,9 @@ impl Deref for Velocity {
 }
 
 impl Road {
-    pub fn new(road_length: u32, vehicles: Vec<Vehicle>, speed_per_lane: Vec<Velocity>) -> Self {
+    pub fn new(length: u32, vehicles: Vec<Vehicle>, speed_per_lane: Vec<Velocity>) -> Self {
         Self {
-            road_length,
+            length,
             vehicles,
             speed_per_lane,
         }
@@ -107,7 +107,7 @@ impl Road {
     pub fn pretty_print(&self) {
         const SIDE_OF_ROAD_STR: &str = "#";
 
-        let road_length = self.road_length as usize;
+        let road_length = self.length as usize;
 
         let mut road = vec![vec![" ".to_string(); road_length + 2]; 3];
 
