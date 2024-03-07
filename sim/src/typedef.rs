@@ -1,9 +1,16 @@
-use std::ops::{AddAssign, Deref};
+use std::ops::{AddAssign, Deref, SubAssign};
 
 pub struct Road {
-    pub length: u32,
-    pub vehicles: Vec<Vehicle>,
-    pub speed_per_lane: Vec<Velocity>,
+    pub len: u8,
+    pub deceleration_probability: f32,
+    vehicles: Vec<Vehicle>,
+    speed_per_lane: Vec<Velocity>,
+}
+
+impl SubAssign<u32> for Velocity {
+    fn sub_assign(&mut self, rhs: u32) {
+        self.0 -= rhs as u8;
+    }
 }
 
 #[derive(Debug)]
@@ -14,23 +21,23 @@ pub struct Vehicle {
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Position {
-    pub x: u128,
+    pub x: u8,
     pub y: u8,
 }
 
 impl AddAssign<Velocity> for Position {
     fn add_assign(&mut self, rhs: Velocity) {
-        self.x += rhs.into_inner() as u128;
+        self.x += rhs.into_inner();
     }
 }
 
 impl Position {
-    pub fn new(x: u128, y: u8) -> Self {
+    pub fn new(x: u8, y: u8) -> Self {
         Self { x, y }
     }
 
-    pub fn distance_1d(&self, rhs: &Self) -> u128 {
-        (self.x as i128 - rhs.x as i128).abs() as u128
+    pub fn distance_1d(&self, rhs: &Self) -> u8 {
+        (self.x as i8 - rhs.x as i8).abs() as u8
     }
 }
 
@@ -62,9 +69,10 @@ impl Deref for Velocity {
 }
 
 impl Road {
-    pub fn new(length: u32, vehicles: Vec<Vehicle>, speed_per_lane: Vec<Velocity>) -> Self {
+    pub fn new(len: u8, deceleration_probability: f32, vehicles: Vec<Vehicle>, speed_per_lane: Vec<Velocity>) -> Self {
         Self {
-            length,
+            len,
+            deceleration_probability,
             vehicles,
             speed_per_lane,
         }
@@ -104,35 +112,43 @@ impl Road {
             .collect()
     }
 
+    pub fn pretty_print_lane(&self, lane: u8, strides: bool) -> String {
+        (0..self.len)
+            .into_iter()
+            .map(|f| {
+                match self
+                    .vehicles
+                    .iter()
+                    .find(|v| v.position.x == f && v.position.y == lane)
+                {
+                    Some(v) => v.velocity.into_inner().to_string(),
+                    None => " ".to_string(),
+                }
+            })
+            .enumerate()
+            .map(|(idx, c)| {
+                if strides && idx % 4 == 0 && c == " " {
+                    "-".to_string()
+                } else {
+                    c
+                }
+            })
+            .collect()
+    }
+
     pub fn pretty_print(&self) {
         const SIDE_OF_ROAD_STR: &str = "#";
 
-        let road_length = self.length as usize;
+        let s = vec![
+            SIDE_OF_ROAD_STR.repeat(self.len as usize),
+            self.pretty_print_lane(2, false),
+            self.pretty_print_lane(1, true),
+            self.pretty_print_lane(0, false),
+            SIDE_OF_ROAD_STR.repeat(self.len as usize),
+        ]
+        .join("\n");
 
-        let mut road = vec![vec![" ".to_string(); road_length + 2]; 3];
-
-        //Print a '-' every 4th position in the second lane of the road
-        for (idx, char) in road[1].iter_mut().enumerate() {
-            if idx % 4 == 0 {
-                *char = "-".to_string();
-            }
-        }
-
-        for vehicle in &self.vehicles {
-            let x = vehicle.position.x as usize;
-            let y = vehicle.position.y as usize;
-            road[y][x] = vehicle.velocity.into_inner().to_string();
-        }
-
-        //Print SIDE_OF_ROAD_CHAR 100 times
-        println!("{}", SIDE_OF_ROAD_STR.repeat(road_length));
-
-        for row in road {
-            println!("{}", row.into_iter().collect::<String>());
-        }
-
-        //Print SIDE_OF_ROAD_CHAR 100 times
-        println!("{}", SIDE_OF_ROAD_STR.repeat(road_length));
+        println!("{s}");
     }
 }
 

@@ -27,17 +27,16 @@ fn main() -> Result<()> {
 
     //Create road for testing the printing
     let mut road = make_test_road();
-    for _ in 0..100 {
+    loop {
         road = sim::step(road);
         road.pretty_print();
     }
-
-    Ok(())
 }
 
 fn make_test_road() -> Road {
     Road::new(
         100,
+        0.5,
         vec![
             Vehicle::new(Position::new(0, 0)),
             Vehicle::new(Position::new(0, 1)),

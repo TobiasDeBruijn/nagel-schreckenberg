@@ -5,7 +5,7 @@ pub struct Recycler;
 
 impl Transformer<Road> for Recycler {
     fn transform(self, mut r: Road) -> Road {
-        let len = r.length as u128;
+        let len = r.len;
         for v in r.get_vehicles_mut() {
             if v.position.x >= len {
                 v.position.x = 0;
