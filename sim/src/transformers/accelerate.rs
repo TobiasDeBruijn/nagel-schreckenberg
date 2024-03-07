@@ -28,8 +28,7 @@ fn apply_lane(r: &mut Road, lane: u8) {
             match vs.get(1) {
                 Some(vnext) => {
                     v.velocity < vmax
-                        && v.position.distance_1d(&vnext.position)
-                            > (v.velocity.into_inner() + 1)
+                        && v.position.distance_1d(&vnext.position) > (v.velocity.into_inner() + 1)
                 }
                 None => v.velocity < vmax,
             }

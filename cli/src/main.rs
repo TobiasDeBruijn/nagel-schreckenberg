@@ -31,12 +31,11 @@ fn main() -> Result<()> {
         road = sim::step(road);
         road.pretty_print();
     }
-
-    Ok(())
 }
 
 fn make_test_road() -> Road {
     Road::new(
+        100,
         vec![
             Vehicle::new(Position::new(0, 0)),
             Vehicle::new(Position::new(0, 1)),
@@ -47,6 +46,5 @@ fn make_test_road() -> Road {
             Vehicle::new(Position::new(100, 2)),
         ],
         vec![Velocity::new(5), Velocity::new(5), Velocity::new(5)],
-        100,
     )
 }

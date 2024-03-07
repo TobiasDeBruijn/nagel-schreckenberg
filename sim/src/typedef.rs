@@ -1,9 +1,9 @@
 use std::ops::{AddAssign, Deref};
 
 pub struct Road {
+    pub len: u8,
     vehicles: Vec<Vehicle>,
     speed_per_lane: Vec<Velocity>,
-    pub len: u8,
 }
 
 #[derive(Debug)]
@@ -62,11 +62,11 @@ impl Deref for Velocity {
 }
 
 impl Road {
-    pub fn new(vehicles: Vec<Vehicle>, speed_per_lane: Vec<Velocity>, len: u8) -> Self {
+    pub fn new(len: u8, vehicles: Vec<Vehicle>, speed_per_lane: Vec<Velocity>) -> Self {
         Self {
             vehicles,
             speed_per_lane,
-            len
+            len,
         }
     }
 
@@ -105,16 +105,25 @@ impl Road {
     }
 
     pub fn pretty_print_lane(&self, lane: u8, strides: bool) -> String {
-        (0..self.len).into_iter()
-            .map(|f| match self.vehicles.iter().find(|v| v.position.x == f && v.position.y == lane) {
-                Some(v) => v.velocity.into_inner().to_string(),
-                None => " ".to_string()
+        (0..self.len)
+            .into_iter()
+            .map(|f| {
+                match self
+                    .vehicles
+                    .iter()
+                    .find(|v| v.position.x == f && v.position.y == lane)
+                {
+                    Some(v) => v.velocity.into_inner().to_string(),
+                    None => " ".to_string(),
+                }
             })
             .enumerate()
-            .map(|(idx, c)| if strides && idx % 4 == 0 && c == " " {
-                "-".to_string()
-            } else {
-                c
+            .map(|(idx, c)| {
+                if strides && idx % 4 == 0 && c == " " {
+                    "-".to_string()
+                } else {
+                    c
+                }
             })
             .collect()
     }
@@ -128,7 +137,8 @@ impl Road {
             self.pretty_print_lane(1, true),
             self.pretty_print_lane(0, false),
             SIDE_OF_ROAD_STR.repeat(self.len as usize),
-        ].join("\n");
+        ]
+        .join("\n");
 
         println!("{s}");
     }
