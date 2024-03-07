@@ -3,7 +3,7 @@ use std::ops::{AddAssign, Deref};
 pub struct Road {
     vehicles: Vec<Vehicle>,
     speed_per_lane: Vec<Velocity>,
-    pub len: u128,
+    pub len: u8,
 }
 
 #[derive(Debug)]
@@ -14,23 +14,23 @@ pub struct Vehicle {
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Position {
-    pub x: u128,
+    pub x: u8,
     pub y: u8,
 }
 
 impl AddAssign<Velocity> for Position {
     fn add_assign(&mut self, rhs: Velocity) {
-        self.x += rhs.into_inner() as u128;
+        self.x += rhs.into_inner();
     }
 }
 
 impl Position {
-    pub fn new(x: u128, y: u8) -> Self {
+    pub fn new(x: u8, y: u8) -> Self {
         Self { x, y }
     }
 
-    pub fn distance_1d(&self, rhs: &Self) -> u128 {
-        (self.x as i128 - rhs.x as i128).abs() as u128
+    pub fn distance_1d(&self, rhs: &Self) -> u8 {
+        (self.x as i8 - rhs.x as i8).abs() as u8
     }
 }
 
@@ -62,7 +62,7 @@ impl Deref for Velocity {
 }
 
 impl Road {
-    pub fn new(vehicles: Vec<Vehicle>, speed_per_lane: Vec<Velocity>, len: u128) -> Self {
+    pub fn new(vehicles: Vec<Vehicle>, speed_per_lane: Vec<Velocity>, len: u8) -> Self {
         Self {
             vehicles,
             speed_per_lane,
@@ -102,16 +102,6 @@ impl Road {
                 }
             })
             .collect()
-    }
-
-    fn get_length_of_road(&self) -> u128 {
-        let xs = self
-            .vehicles
-            .iter()
-            .map(|v| v.position.x)
-            .collect::<Vec<_>>();
-
-        xs.iter().max().unwrap_or(&0_u128) - xs.iter().min().unwrap_or(&0_u128)
     }
 
     pub fn pretty_print_lane(&self, lane: u8, strides: bool) -> String {

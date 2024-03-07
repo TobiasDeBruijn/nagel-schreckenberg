@@ -28,7 +28,7 @@ fn apply_lane(r: &mut Road, lane: u8) {
             match vs.get(1) {
                 Some(vnext) => {
                     let delta_x = v.position.distance_1d(&vnext.position);
-                    if delta_x <= v.velocity.into_inner() as u128 {
+                    if delta_x <= v.velocity.into_inner() {
                         (v.position.clone(), Velocity::new(delta_x as u8 - 1))
                     } else {
                         (v.position.clone(), v.velocity)

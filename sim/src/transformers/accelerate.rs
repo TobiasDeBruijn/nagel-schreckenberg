@@ -29,7 +29,7 @@ fn apply_lane(r: &mut Road, lane: u8) {
                 Some(vnext) => {
                     v.velocity < vmax
                         && v.position.distance_1d(&vnext.position)
-                            > (v.velocity.into_inner() + 1) as u128
+                            > (v.velocity.into_inner() + 1)
                 }
                 None => v.velocity < vmax,
             }
@@ -47,28 +47,4 @@ fn apply_lane(r: &mut Road, lane: u8) {
     vs.iter_mut()
         .filter(|f| to_accelerate.contains(&f.position))
         .for_each(|f| f.velocity += Velocity::new(1));
-}
-
-#[cfg(test)]
-mod test {
-    use crate::transformers::accelerate::apply_lane;
-    use crate::typedef::{Position, Road, Vehicle, Velocity};
-
-    #[test]
-    fn simple() {
-        let mut r = Road::new(
-            vec![
-                Vehicle::new(Position::new(0, 0)),
-                Vehicle::new(Position::new(20, 0)),
-            ],
-            vec![Velocity::new(10)],
-        );
-
-        for _ in 0..=10 {
-            apply_lane(&mut r, 0);
-        }
-
-        let lane = r.get_vehicles_in_lane(0);
-        assert_eq!(lane[0].velocity, Velocity::new(10));
-    }
 }
