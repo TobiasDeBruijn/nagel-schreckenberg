@@ -1,5 +1,5 @@
 use crate::model::Model;
-use crate::transformers::{Accelerator, Decelerator, Mover, Recycler, Randomizer};
+use crate::transformers::{Accelerator, Decelerator, Randomizer, LaneMover, Mover, Recycler};
 use crate::typedef::Road;
 
 pub mod model;
@@ -12,6 +12,8 @@ pub fn step(road: Road) -> Road {
         .apply(Decelerator)
         .apply(Mover)
         .apply(Recycler)
+        .apply(Randomizer)
+        .apply(LaneMover)
         .apply(Randomizer)
         .finish()
 }
