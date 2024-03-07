@@ -1,8 +1,9 @@
 use std::ops::{AddAssign, Deref};
 
 pub struct Road {
-    vehicles: Vec<Vehicle>,
-    speed_per_lane: Vec<Velocity>,
+    pub road_length: u32,
+    pub vehicles: Vec<Vehicle>,
+    pub speed_per_lane: Vec<Velocity>,
 }
 
 #[derive(Debug)]
@@ -61,8 +62,9 @@ impl Deref for Velocity {
 }
 
 impl Road {
-    pub fn new(vehicles: Vec<Vehicle>, speed_per_lane: Vec<Velocity>) -> Self {
+    pub fn new(road_length: u32, vehicles: Vec<Vehicle>, speed_per_lane: Vec<Velocity>) -> Self {
         Self {
+            road_length,
             vehicles,
             speed_per_lane,
         }
@@ -102,26 +104,10 @@ impl Road {
             .collect()
     }
 
-    fn get_length_of_road(&self) -> u128 {
-        let xs = self
-            .vehicles
-            .iter()
-            .map(|v| v.position.x)
-            .collect::<Vec<_>>();
-
-        xs.iter().max().unwrap_or(&0_u128) - xs.iter().min().unwrap_or(&0_u128)
-    }
-
     pub fn pretty_print(&self) {
         const SIDE_OF_ROAD_STR: &str = "#";
 
-        let road_start = self
-            .vehicles
-            .iter()
-            .map(|x| x.position.x)
-            .min()
-            .unwrap_or_default() as usize;
-        let road_length = self.get_length_of_road() as usize;
+        let road_length = self.road_length as usize;
 
         let mut road = vec![vec![" ".to_string(); road_length]; 3];
 
@@ -133,8 +119,9 @@ impl Road {
         }
 
         for vehicle in &self.vehicles {
-            let x = vehicle.position.x as usize + road_start;
-            road[vehicle.position.y as usize][x] = vehicle.velocity.into_inner().to_string();
+            let x = vehicle.position.x as usize;
+            let y = vehicle.position.y as usize;
+            road[y][x] = vehicle.velocity.into_inner().to_string();
         }
         println!("Road:");
 

@@ -37,6 +37,7 @@ fn main() -> Result<()> {
 
 fn make_test_road() -> Road {
     Road::new(
+        100,
         vec![
             Vehicle::new(Position::new(0, 0)),
             Vehicle::new(Position::new(0, 1)),
@@ -44,7 +45,7 @@ fn make_test_road() -> Road {
             Vehicle::new(Position::new(3, 2)),
             Vehicle::new(Position::new(2, 2)),
             Vehicle::new(Position::new(1, 2)),
-            Vehicle::new(Position::new(100, 2)),
+            Vehicle::new(Position::new(90, 2)),
         ],
         vec![Velocity::new(5), Velocity::new(5), Velocity::new(5)],
     )

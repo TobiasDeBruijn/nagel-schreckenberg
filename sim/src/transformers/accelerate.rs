@@ -57,6 +57,7 @@ mod test {
     #[test]
     fn simple() {
         let mut r = Road::new(
+            100,
             vec![
                 Vehicle::new(Position::new(0, 0)),
                 Vehicle::new(Position::new(20, 0)),
