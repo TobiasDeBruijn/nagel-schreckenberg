@@ -109,7 +109,7 @@ impl Road {
 
         let road_length = self.road_length as usize;
 
-        let mut road = vec![vec![" ".to_string(); road_length]; 3];
+        let mut road = vec![vec![" ".to_string(); road_length + 2]; 3];
 
         //Print a '-' every 4th position in the second lane of the road
         for (idx, char) in road[1].iter_mut().enumerate() {
@@ -123,7 +123,6 @@ impl Road {
             let y = vehicle.position.y as usize;
             road[y][x] = vehicle.velocity.into_inner().to_string();
         }
-        println!("Road:");
 
         //Print SIDE_OF_ROAD_CHAR 100 times
         println!("{}", SIDE_OF_ROAD_STR.repeat(road_length));
