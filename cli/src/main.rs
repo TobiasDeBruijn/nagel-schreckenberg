@@ -47,5 +47,6 @@ fn make_test_road() -> Road {
             Vehicle::new(Position::new(100, 2)),
         ],
         vec![Velocity::new(5), Velocity::new(5), Velocity::new(5)],
+        100,
     )
 }

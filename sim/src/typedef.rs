@@ -3,6 +3,7 @@ use std::ops::{AddAssign, Deref};
 pub struct Road {
     vehicles: Vec<Vehicle>,
     speed_per_lane: Vec<Velocity>,
+    pub len: u128,
 }
 
 #[derive(Debug)]
@@ -61,10 +62,11 @@ impl Deref for Velocity {
 }
 
 impl Road {
-    pub fn new(vehicles: Vec<Vehicle>, speed_per_lane: Vec<Velocity>) -> Self {
+    pub fn new(vehicles: Vec<Vehicle>, speed_per_lane: Vec<Velocity>, len: u128) -> Self {
         Self {
             vehicles,
             speed_per_lane,
+            len
         }
     }
 
@@ -123,7 +125,7 @@ impl Road {
             .unwrap_or_default() as usize;
         let road_length = self.get_length_of_road() as usize;
 
-        let mut road = vec![vec![" ".to_string(); road_length]; 3];
+        let mut road = vec![vec![" ".to_string(); road_length + 2]; 3];
 
         //Print a '-' every 4th position in the second lane of the road
         for (idx, char) in road[1].iter_mut().enumerate() {
