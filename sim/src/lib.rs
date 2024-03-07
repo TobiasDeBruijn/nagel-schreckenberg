@@ -14,6 +14,5 @@ pub fn step(road: Road) -> Road {
         .apply(Recycler)
         .apply(Randomizer)
         .apply(LaneMover)
-        .apply(Randomizer)
         .finish()
 }
