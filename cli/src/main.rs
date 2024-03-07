@@ -12,7 +12,7 @@ use sim::typedef::{Position, Road, Vehicle, Velocity};
 pub struct Args {
     #[clap(short)]
     #[clap(default_value = "false")]
-    verbose: bool
+    verbose: bool,
 }
 
 fn main() -> Result<()> {
@@ -34,6 +34,8 @@ fn main() -> Result<()> {
 
     //Create road for testing the printing
     let mut road = make_test_road();
+    road.pretty_print();
+
     loop {
         road = sim::step(road);
         road.pretty_print();
@@ -43,16 +45,11 @@ fn main() -> Result<()> {
 fn make_test_road() -> Road {
     Road::new(
         100,
-        0.5,
-        vec![
-            Vehicle::new(Position::new(0, 0), 0.5),
-            Vehicle::new(Position::new(0, 1), 0.5),
-            Vehicle::new(Position::new(5, 2), 0.5),
-            Vehicle::new(Position::new(3, 2), 0.5),
-            Vehicle::new(Position::new(2, 2), 0.5),
-            Vehicle::new(Position::new(1, 2), 0.5),
-            Vehicle::new(Position::new(100, 2), 0.5),
-        ],
+        0.0,
+        (0..20)
+            .into_iter()
+            .map(|x| Vehicle::new(Position::new(x, 0), 0.9, 0.1))
+            .collect::<Vec<_>>(),
         vec![Velocity::new(5), Velocity::new(5), Velocity::new(5)],
     )
 }

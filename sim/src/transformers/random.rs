@@ -1,7 +1,7 @@
 use crate::transformers::Transformer;
 use crate::typedef::{Road, Velocity};
-use std::cmp::max;
-use rand::Rng; // Add this line to import the `Rng` trait from the `rand` crate
+use rand::Rng;
+use std::cmp::max; // Add this line to import the `Rng` trait from the `rand` crate
 
 pub struct Randomizer;
 
@@ -15,7 +15,7 @@ impl Transformer<Road> for Randomizer {
         for vs in r.get_vehicles_mut() {
             let r = rng.gen::<f32>();
             if r < deceleration_probability {
-                vs.velocity = Velocity::new(max(vs.velocity.into_inner() as i8  - 1, 0) as u8);
+                vs.velocity = Velocity::new(max(vs.velocity.into_inner() as i8 - 1, 0) as u8);
             }
         }
         r

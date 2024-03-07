@@ -1,5 +1,6 @@
 use crate::transformers::Transformer;
 use crate::typedef::{Road, Velocity};
+use std::cmp::max;
 use std::collections::HashMap;
 use tracing::trace;
 
@@ -28,12 +29,18 @@ fn apply_lane(r: &mut Road, lane: u8) {
             let v = &vs[0];
             match vs.get(1) {
                 Some(vnext) => {
+                    trace!("vnext {}, {}", vnext.position.x, vnext.position.y);
+                    trace!("vthis {}, {}", v.position.x, v.position.y);
+
                     let delta_x = v.position.distance_1d(&vnext.position);
                     trace!("dx : {delta_x}");
-                    trace!("v  : {}", v.velocity.into_inner());
+                    trace!("velocity  : {}", v.velocity.into_inner());
 
-                    if delta_x <= v.velocity.into_inner() && v.velocity.into_inner() != 0{
-                        (v.position.clone(), Velocity::new(delta_x as u8 - 1))
+                    if delta_x <= v.velocity.into_inner() && v.velocity.into_inner() != 0 {
+                        (
+                            v.position.clone(),
+                            Velocity::new(max(delta_x as i8 - 1, 0) as u8),
+                        )
                     } else {
                         (v.position.clone(), v.velocity)
                     }

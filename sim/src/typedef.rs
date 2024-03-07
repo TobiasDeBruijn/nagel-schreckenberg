@@ -1,3 +1,4 @@
+use std::io::{stdout, Write};
 use std::ops::{AddAssign, Deref, SubAssign};
 
 pub struct Road {
@@ -18,6 +19,7 @@ pub struct Vehicle {
     pub position: Position,
     pub velocity: Velocity,
     pub move_left_chance: f32,
+    pub move_right_chance: f32,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -70,7 +72,12 @@ impl Deref for Velocity {
 }
 
 impl Road {
-    pub fn new(len: u8, deceleration_probability: f32, vehicles: Vec<Vehicle>, speed_per_lane: Vec<Velocity>) -> Self {
+    pub fn new(
+        len: u8,
+        deceleration_probability: f32,
+        vehicles: Vec<Vehicle>,
+        speed_per_lane: Vec<Velocity>,
+    ) -> Self {
         Self {
             len,
             deceleration_probability,
@@ -138,6 +145,7 @@ impl Road {
     }
 
     pub fn pretty_print(&self) {
+        print!("{esc}c", esc = 27 as char);
         const SIDE_OF_ROAD_STR: &str = "#";
 
         let s = vec![
@@ -150,15 +158,18 @@ impl Road {
         .join("\n");
 
         println!("{s}");
+
+        stdout().flush().expect("Flush stdout");
     }
 }
 
 impl Vehicle {
-    pub fn new(position: Position, move_left_chance: f32) -> Self {
+    pub fn new(position: Position, move_left_chance: f32, move_right_chance: f32) -> Self {
         Self {
             position,
             velocity: Velocity::new(0),
             move_left_chance,
+            move_right_chance,
         }
     }
 }

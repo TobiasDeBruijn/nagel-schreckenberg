@@ -1,6 +1,6 @@
-use tracing::trace;
 use crate::transformers::Transformer;
 use crate::typedef::{Road, Velocity};
+use tracing::trace;
 
 pub struct Accelerator;
 
