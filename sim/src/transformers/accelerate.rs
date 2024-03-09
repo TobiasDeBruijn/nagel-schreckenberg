@@ -14,6 +14,14 @@ impl Transformer<Road> for Accelerator {
     }
 }
 
+/// Apply the acceleration rules to a single lane
+/// This is done by iterating over the vehicles in the lane, and checking if the distance
+/// to the next vehicle is greater than the current velocity. If it is, then the velocity is
+/// increased by 1, unless the velocity is already at the maximum.
+///
+/// # Arguments
+/// * `r` - The road to apply the acceleration to
+/// * `lane` - The lane to apply the acceleration to
 fn apply_lane(r: &mut Road, lane: u8) {
     let vmax = r
         .get_max_velocity_in_lane(lane)
@@ -37,6 +45,8 @@ fn apply_lane(r: &mut Road, lane: u8) {
         .map(|f| f[0].position.clone())
         .collect::<Vec<_>>();
 
+    // If the number of vehicles is odd, then the last vehicle should be checked for acceleration
+    // We do this because the last vehicle will not be checked in the windows iterator
     if vs.len() % 2 != 0 {
         match vs.last() {
             Some(v) if v.velocity < vmax => to_accelerate.push(v.position.clone()),

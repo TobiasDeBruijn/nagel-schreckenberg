@@ -16,12 +16,17 @@ impl Transformer<Road> for Decelerator {
     }
 }
 
+/// Apply the deceleration rules to a single lane
+/// This is done by iterating over the vehicles in the lane, and checking if the distance
+/// to the next vehicle is less than the current velocity. If it is, then the velocity is
+/// reduced to the distance - 1, unless the velocity is already 0.
+/// # Arguments
+/// * `r` - The road to apply the deceleration to
+/// * `lane` - The lane to apply the deceleration to
 fn apply_lane(r: &mut Road, lane: u8) {
     let mut vs = r.get_vehicles_in_lane_mut(lane);
     vs.sort_by(|a, b| a.position.cmp(&b.position));
 
-    // Figure out which vehicle needs to be slowed down (due to other traffic ahead)
-    // Return those as a HashMap<Position, Velocity>, where the value will be the new velocity
     let mut to_decel = vs
         .windows(2)
         .into_iter()

@@ -39,6 +39,11 @@ impl Position {
         Self { x, y }
     }
 
+    ///Find the distance between two positions in the x direction
+    ///
+    /// # Arguments
+    /// * self - The first position
+    /// * rhs - The second position
     pub fn distance_1d(&self, rhs: &Self) -> u8 {
         (self.x as i8 - rhs.x as i8).abs() as u8
     }
@@ -212,5 +217,129 @@ impl Vehicle {
             move_left_chance,
             move_right_chance,
         }
+    }
+
+    // 1. Car checks maximum speed it can achieve on it's current position (x, lane) and adjacent lane (x, lane+1).
+    // 2. If the potential maximal speed on lane+1 is higher it checks safe conditions:
+    // 3. Distance to previous car on lane+1 is greater that it's speed to avoid emergency braking of previous car.
+    // 4. Change lane with probability P.
+    pub fn update_vehicle(&mut self, road: &Road) -> &Self {
+        self.update_lane(road).update_x(road)
+    }
+
+    //Update the lane of the vehicle
+    pub fn update_lane(&mut self, road: &Road) -> &mut Self {
+        let max_speed = road.get_max_velocity_in_lane(self.position.y).unwrap();
+        let max_speed_next_lane = road
+            .get_max_velocity_in_lane(self.position.y + 1)
+            .unwrap_or(max_speed);
+        let max_speed_prev_lane = road
+            .get_max_velocity_in_lane(self.position.y - 1)
+            .unwrap_or(max_speed);
+
+        if max_speed_next_lane > max_speed {
+            if self.position.y < 2 {
+                let next_lane = road.get_vehicles_in_lane(self.position.y + 1);
+                if next_lane.is_empty() {
+                    self.position.y += 1;
+                } else {
+                    let next_vehicle = next_lane.iter().min_by_key(|v| v.position.x).unwrap();
+                    if self.position.x + (max_speed.into_inner() as u8)
+                        < next_vehicle.position.x - next_vehicle.velocity.into_inner() as u8
+                    {
+                        self.position.y += 1;
+                    }
+                }
+            }
+        } else if max_speed_prev_lane > max_speed {
+            if self.position.y > 0 {
+                let prev_lane = road.get_vehicles_in_lane(self.position.y - 1);
+                if prev_lane.is_empty() {
+                    self.position.y -= 1;
+                } else {
+                    let prev_vehicle = prev_lane.iter().min_by_key(|v| v.position.x).unwrap();
+                    if self.position.x + (max_speed.into_inner() as u8)
+                        < prev_vehicle.position.x - prev_vehicle.velocity.into_inner() as u8
+                    {
+                        self.position.y -= 1;
+                    }
+                }
+            }
+        }
+
+        self
+    }
+
+    fn willing_to_move_left(&self, road: &Road) -> bool {
+        self.can_go_left(road) && self.willing_to_change_lane(road, self.position.y + 1)
+    }
+
+    fn willing_to_move_right(&self, road: &Road) -> bool {
+        self.can_go_right(road) && self.willing_to_change_lane(road, self.position.y - 1)
+    }
+
+    fn willing_to_change_lane(&self, road: &Road, lane: u8) -> bool {
+        let max_speed = road.get_max_velocity_in_lane(self.position.y).unwrap();
+        let max_speed_next_lane = road
+            .get_max_velocity_in_lane(self.position.y + 1)
+            .unwrap_or(max_speed);
+        let max_speed_prev_lane = road
+            .get_max_velocity_in_lane(self.position.y - 1)
+            .unwrap_or(max_speed);
+
+        if max_speed_next_lane > max_speed {
+            if self.position.y < 2 {
+                let next_lane = road.get_vehicles_in_lane(self.position.y + 1);
+                if next_lane.is_empty() {
+                    return true;
+                } else {
+                    let next_vehicle = next_lane.iter().min_by_key(|v| v.position.x).unwrap();
+                    if self.position.x + (max_speed.into_inner() as u8)
+                        < next_vehicle.position.x - next_vehicle.velocity.into_inner() as u8
+                    {
+                        return true;
+                    }
+                }
+            }
+        } else if max_speed_prev_lane > max_speed {
+            if self.position.y > 0 {
+                let prev_lane = road.get_vehicles_in_lane(self.position.y - 1);
+                if prev_lane.is_empty() {
+                    return true;
+                } else {
+                    let prev_vehicle = prev_lane.iter().min_by_key(|v| v.position.x).unwrap();
+                    if self.position.x + (max_speed.into_inner() as u8)
+                        < prev_vehicle.position.x - prev_vehicle.velocity.into_inner() as u8
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        false
+    }
+
+    /// Check if the vehicle can go left by checking if it is in bounds
+    /// # Arguments
+    /// * `road` - The road to check if the vehicle can go left on
+    fn can_go_left(&self, road: &Road) -> bool {
+        self.position.y > 1
+    }
+
+    /// Check if the vehicle can go right by checking if it is in bounds
+    /// # Arguments
+    /// * `road` - The road to check if the vehicle can go right on
+    /// # Returns
+    /// True if the vehicle can go right, false otherwise
+    fn can_go_right(&self, road: &Road) -> bool {
+        self.position.y < 1
+    }
+
+    pub fn update_x(&mut self, road: &Road) -> &mut Self {
+        let max_speed = road.get_max_velocity_in_lane(self.position.y).unwrap();
+        self.velocity = Velocity::new(max_speed.into_inner());
+        self.position += self.velocity;
+        self
     }
 }
