@@ -1,7 +1,9 @@
+use std::cmp::{max, min};
 use std::io::{stdout, Write};
 use std::ops::{AddAssign, Deref, SubAssign};
 
 use rand::Rng;
+use tap::Tap;
 
 pub struct Road {
     pub len: u8,
@@ -94,7 +96,8 @@ impl Road {
     }
 
     pub fn update_vehicles(&mut self) {
-        self.vehicles = self.vehicles
+        self.vehicles = self
+            .vehicles
             .clone()
             .into_iter()
             .map(|vehicle| vehicle.update_vehicle(&self))
@@ -138,37 +141,60 @@ impl Road {
     pub fn get_max_velocity_on_position(&self, vehicle: &Vehicle) -> Velocity {
         //Based on the vehicle's position and velocity, return the maximum velocity it can achieve
         let vel = vehicle.velocity.into_inner();
-        let lane = vehicle.position.y;
         let pos = &vehicle.position;
-        let dist_to_next_vehicle = self.distance_to_next_vehicle(pos.clone(), lane);
+        let dist_to_next_vehicle = self.distance_to_next_vehicle(pos.clone());
 
-        //Calculate the maximum velocity the vehicle can achieve by taking the minimum of the distance to the next vehicle and it's current velocity + 1
-        let max_velocity = (dist_to_next_vehicle as i8 - 1).min(vel as i8 + 1) as u8;
+        //Calculate the maximum velocity the vehicle can achieve by taking the minimum of the distance to the next vehicle and it's current velocity +
 
-        Velocity::new(max_velocity)
+        if dist_to_next_vehicle == 0 {
+            Velocity::new(0)
+        } else {
+            let max_velocity = min(dist_to_next_vehicle, vel + 1);
+            let real_velocity = min(
+                max_velocity,
+                self.get_max_velocity_in_lane(vehicle.position.y)
+                    .unwrap()
+                    .into_inner(),
+            );
 
-    }
-
-    pub fn distance_to_next_vehicle(&self, position : Position, lane: u8) -> u8 {
-        let vehicles = self.get_vehicles_in_lane(lane);
-        let mut min_distance = self.len;
-        for vehicle in vehicles {
-            if vehicle.position.x > position.x {
-                min_distance = min_distance.min(vehicle.position.x - position.x);
-            }
+            Velocity::new(real_velocity)
         }
-        min_distance
     }
 
-    pub fn find_previous_vehicle(&self, position: Position, lane: u8) -> Option<&Vehicle> {
-        let vehicles = self.get_vehicles_in_lane(lane);
-        //return the first car begin position, that is, the car that is behind the position but closest to it
-        vehicles
-            .iter()
-            .filter(|v| v.position.x < position.x)
-            .max_by_key(|v| v.position.x)
-            .map(|v| *v)
+    pub fn distance_to_next_vehicle(&self, position: Position) -> u8 {
+        let mut source_set = self.get_vehicles_in_lane(position.y);
+        source_set.sort_by(|a, b| a.position.x.cmp(&b.position.x));
 
+        let pos = source_set
+            .iter()
+            .skip_while(|f| f.position.x <= position.x)
+            .collect::<Vec<_>>();
+
+        let next_vehicle = match pos.first() {
+            Some(v) => v,
+            None => match source_set.first() {
+                Some(v) => v,
+                None => return u8::MAX,
+            },
+        };
+
+        ((next_vehicle.position.x as i16 - position.x as i16 + self.len as i16 - 1)
+            % self.len as i16) as u8
+    }
+
+    pub fn find_previous_vehicle(&self, position: Position) -> Option<&Vehicle> {
+        let mut source_set = self.get_vehicles_in_lane(position.y);
+        source_set.sort_by(|a, b| a.position.x.cmp(&b.position.x));
+
+        let vehicles_behind = source_set
+            .iter()
+            .take_while(|f| f.position.x < position.x)
+            .collect::<Vec<_>>();
+
+        match vehicles_behind.last() {
+            Some(v) => Some(**v),
+            None => source_set.last().map(|v| *v),
+        }
     }
 
     pub fn pretty_print_lane(&self, lane: u8, strides: bool) -> String {
@@ -232,6 +258,26 @@ impl Road {
         self.print_lane_speed_avg(1);
         self.print_lane_speed_avg(2);
 
+        println!("Total vehicles: \t\t{}", self.vehicles.len());
+
+        let mut r = self
+            .vehicles
+            .iter()
+            .filter(|f| f.position.y == 0)
+            .map(|f| f.position.x)
+            .collect::<Vec<_>>();
+
+        let mut v = r.clone();
+        r.dedup();
+
+        println!("Total unique vehicles: \t\t{}", r.len());
+
+        if r.len() != v.len() {
+            v.sort();
+            dbg!(v);
+            panic!()
+        }
+
         stdout().flush().expect("Flush stdout");
     }
 
@@ -266,11 +312,11 @@ impl Vehicle {
     }
 
     fn go_left(&self) -> Position {
-        Position::new(self.position.x, self.position.y - 1)
+        Position::new(self.position.x, self.position.y + 1)
     }
 
     fn go_right(&self) -> Position {
-        Position::new(self.position.x, self.position.y + 1)
+        Position::new(self.position.x, self.position.y - 1)
     }
 
     // 1. Car checks maximum speed it can achieve on it's current position (x, lane) and adjacent lane (x, lane+1).
@@ -278,17 +324,11 @@ impl Vehicle {
     // 3. Distance to previous car on lane+1 is greater that it's speed to avoid emergency braking of previous car.
     // 4. Change lane with probability P.
     pub fn update_vehicle(self, road: &Road) -> Self {
-        self
-            .update_lane(road)
-            .update_x(road)
+        self.update_lane(road).update_x(road)
     }
 
     pub fn update_x(mut self, road: &Road) -> Self {
-
-        let _max_velocity = road.get_max_velocity_on_position(&self);
-        
-        self.velocity = _max_velocity;
-
+        self.velocity = road.get_max_velocity_on_position(&self);
         let mut rng = rand::thread_rng();
         let r = rng.gen::<f32>();
 
@@ -296,25 +336,21 @@ impl Vehicle {
             self.velocity -= 1;
         }
 
-        self.position += self.velocity;
+        self.position.x = (self.position.x + self.velocity.into_inner()) % road.len;
 
         self
     }
 
     //Update the lane of the vehicle
-    pub fn update_lane(mut self, road: &Road) -> Self{
+    pub fn update_lane(mut self, road: &Road) -> Self {
         let mut rng = rand::thread_rng();
-        let r = rng.gen::<f32>();
 
         if self.willing_to_move_left(road) {
-            
-            if r < self.move_left_chance {
+            if rng.gen_bool(self.move_left_chance as f64) {
                 self.position = self.go_left();
             }
-        }
-        else if self.willing_to_move_right(road) {
-    
-            if r < self.move_right_chance {
+        } else if self.willing_to_move_right(road) {
+            if rng.gen_bool(self.move_right_chance as f64) {
                 self.position = self.go_right();
             }
         }
@@ -323,27 +359,37 @@ impl Vehicle {
     }
 
     fn willing_to_move_left(&self, road: &Road) -> bool {
-        self.can_go_left() && self.willing_to_change_lane(road, self.position.y + 1)
+        if self.can_go_left() {
+            self.willing_to_change_lane(road, self.position.y + 1)
+        } else {
+            false
+        }
     }
 
     fn willing_to_move_right(&self, road: &Road) -> bool {
-        self.can_go_right() && self.willing_to_change_lane(road, self.position.y - 1)
+        if self.can_go_right() {
+            self.willing_to_change_lane(road, self.position.y - 1)
+        } else {
+            false
+        }
     }
 
     fn willing_to_change_lane(&self, road: &Road, lane: u8) -> bool {
         let src_lane_speed = road.get_max_velocity_in_lane(self.position.y).unwrap();
         let dst_lane_speed = road.get_max_velocity_in_lane(lane).unwrap();
 
-        if dst_lane_speed <= src_lane_speed {
+        if dst_lane_speed < src_lane_speed {
             return false;
         }
+
         let pos = &self.position;
-        let previous_vehicle = road.find_previous_vehicle(pos.clone(), lane);
+        let previous_vehicle = road.find_previous_vehicle(pos.clone());
 
         match previous_vehicle {
             Some(v) => {
-                let distance = self.position.distance_1d(&v.position);
-                let safe_distance = self.velocity.into_inner() as u8;
+                let distance = ((pos.x as i16 - v.position.x as i16 + road.len as i16 - 1)
+                    % road.len as i16) as u8;
+                let safe_distance = self.velocity.into_inner();
                 distance > safe_distance
             }
             None => true,
@@ -354,7 +400,7 @@ impl Vehicle {
     /// # Arguments
     /// * `road` - The road to check if the vehicle can go left on
     fn can_go_left(&self) -> bool {
-        self.position.y > 1
+        self.position.y < 2
     }
 
     /// Check if the vehicle can go right by checking if it is in bounds
@@ -363,6 +409,6 @@ impl Vehicle {
     /// # Returns
     /// True if the vehicle can go right, false otherwise
     fn can_go_right(&self) -> bool {
-        self.position.y < 1
+        self.position.y > 0
     }
 }

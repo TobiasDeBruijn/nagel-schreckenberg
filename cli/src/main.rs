@@ -1,6 +1,8 @@
 use clap::Parser;
 use color_eyre::Result;
 use std::env::{set_var, var};
+use std::thread::sleep;
+use std::time::Duration;
 use tracing_subscriber::fmt::layer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -39,17 +41,20 @@ fn main() -> Result<()> {
     loop {
         road = sim::step(road);
         road.pretty_print();
+
+        sleep(Duration::from_millis(100));
     }
+    Ok(())
 }
 
 fn make_test_road() -> Road {
     Road::new(
         100,
         0.0,
-        (0..10)
+        (0..60)
             .into_iter()
-            .map(|x| Vehicle::new(Position::new(x, 0), 0.9, 0.1))
+            .map(|x| Vehicle::new(Position::new(x, 0), 0.5, 0.8))
             .collect::<Vec<_>>(),
-        vec![Velocity::new(30), Velocity::new(30), Velocity::new(30)],
+        vec![Velocity::new(3); 3],
     )
 }
