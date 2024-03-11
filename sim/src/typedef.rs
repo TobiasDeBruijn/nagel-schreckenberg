@@ -16,7 +16,7 @@ impl SubAssign<u32> for Velocity {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Vehicle {
     pub position: Position,
     pub velocity: Velocity,
@@ -94,14 +94,14 @@ impl Road {
     }
 
     pub fn update_vehicles(&mut self) {
-        for vehicle in self.vehicles.iter_mut() {
-            let new_vehicle = vehicle.update_vehicle(self);
-
-            *vehicle = new_vehicle;
-        }
+        self.vehicles = self.vehicles
+            .clone()
+            .into_iter()
+            .map(|vehicle| vehicle.update_vehicle(&self))
+            .collect::<Vec<_>>();
     }
 
-    pub fn get_vehicles_in_lane(&mut self, lane: u8) -> Vec<&Vehicle> {
+    pub fn get_vehicles_in_lane(&self, lane: u8) -> Vec<&Vehicle> {
         self.vehicles
             .iter()
             .filter(|vehicle| vehicle.position.y == lane)
@@ -277,14 +277,15 @@ impl Vehicle {
     // 2. If the potential maximal speed on lane+1 is higher it checks safe conditions:
     // 3. Distance to previous car on lane+1 is greater that it's speed to avoid emergency braking of previous car.
     // 4. Change lane with probability P.
-    pub fn update_vehicle(&mut self, road: &Road) {
-        self.update_lane(road);
-        self.update_x(road);
+    pub fn update_vehicle(self, road: &Road) -> Self {
+        self
+            .update_lane(road)
+            .update_x(road)
     }
 
-    pub fn update_x(&mut self, road: &Road) {
+    pub fn update_x(mut self, road: &Road) -> Self {
 
-        let _max_velocity = road.get_max_velocity_on_position(self);
+        let _max_velocity = road.get_max_velocity_on_position(&self);
         
         self.velocity = _max_velocity;
 
@@ -296,10 +297,12 @@ impl Vehicle {
         }
 
         self.position += self.velocity;
+
+        self
     }
 
     //Update the lane of the vehicle
-    pub fn update_lane(&mut self, road: &Road) {
+    pub fn update_lane(mut self, road: &Road) -> Self{
         let mut rng = rand::thread_rng();
         let r = rng.gen::<f32>();
 
@@ -315,6 +318,8 @@ impl Vehicle {
                 self.position = self.go_right();
             }
         }
+
+        self
     }
 
     fn willing_to_move_left(&self, road: &Road) -> bool {
