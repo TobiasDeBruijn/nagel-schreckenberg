@@ -1,8 +1,9 @@
 use crate::typedef::Road;
 
-pub mod model;
-pub mod transformers;
 pub mod typedef;
+
+pub mod road;
+pub mod vehicle;
 
 // 1. Car checks maximum speed it can achieve on it's current position (x, lane) and adjacent lane (x, lane+1).
 // 2. If the potential maximal speed on lane+1 is higher it checks safe conditions:

@@ -42,17 +42,17 @@ fn main() -> Result<()> {
         road = sim::step(road);
         road.pretty_print();
 
-        sleep(Duration::from_millis(100));
+        sleep(Duration::from_millis(1));
     }
 }
 
 fn make_test_road() -> Road {
     //Add vehicles to the road to all three lanes
     let mut vehicles = Vec::new();
-    for i in 0..90 {
+    for i in 0..16 {
         vehicles.push(Vehicle::new(Position::new(i, 0), 0.5, 0.5));
         vehicles.push(Vehicle::new(Position::new(i, 1), 0.5, 0.5));
-        // vehicles.push(Vehicle::new(Position::new(i, 2), 0.5, 0.5));
+        vehicles.push(Vehicle::new(Position::new(i, 2), 0.5, 0.5));
     }
 
     Road::new(
