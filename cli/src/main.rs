@@ -44,17 +44,21 @@ fn main() -> Result<()> {
 
         sleep(Duration::from_millis(100));
     }
-    Ok(())
 }
 
 fn make_test_road() -> Road {
+    //Add vehicles to the road to all three lanes
+    let mut vehicles = Vec::new();
+    for i in 0..90 {
+        vehicles.push(Vehicle::new(Position::new(i, 0), 0.5, 0.5));
+        vehicles.push(Vehicle::new(Position::new(i, 1), 0.5, 0.5));
+        // vehicles.push(Vehicle::new(Position::new(i, 2), 0.5, 0.5));
+    }
+
     Road::new(
-        100,
-        0.0,
-        (0..60)
-            .into_iter()
-            .map(|x| Vehicle::new(Position::new(x, 0), 0.5, 0.8))
-            .collect::<Vec<_>>(),
-        vec![Velocity::new(3); 3],
+        200,
+        0.3,
+        vehicles,
+        vec![Velocity::new(9), Velocity::new(9), Velocity::new(9)],
     )
 }
