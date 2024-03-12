@@ -15,6 +15,8 @@ pub struct Args {
     #[clap(short)]
     #[clap(default_value = "false")]
     verbose: bool,
+    #[clap(short)]
+    iterations: usize,
 }
 
 fn main() -> Result<()> {
@@ -38,12 +40,12 @@ fn main() -> Result<()> {
     let mut road = make_test_road();
     road.pretty_print();
 
-    loop {
+    for i in 0..args.iterations {
         road = sim::step(road);
         road.pretty_print();
-
-        sleep(Duration::from_millis(1));
     }
+
+    Ok(())
 }
 
 fn make_test_road() -> Road {
