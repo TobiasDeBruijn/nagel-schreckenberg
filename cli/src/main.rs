@@ -1,8 +1,7 @@
 use clap::Parser;
 use color_eyre::Result;
 use std::env::{set_var, var};
-use std::thread::sleep;
-use std::time::Duration;
+use std::time::Instant;
 use tracing_subscriber::fmt::layer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -40,10 +39,15 @@ fn main() -> Result<()> {
     let mut road = make_test_road();
     road.pretty_print();
 
-    for i in 0..args.iterations {
+    let start = Instant::now();
+    for _ in 0..args.iterations {
         road = sim::step(road);
-        road.pretty_print();
     }
+
+    let end = start.elapsed();
+    road.pretty_print();
+
+    println!("Elapsed: {end:?}");
 
     Ok(())
 }
@@ -58,7 +62,7 @@ fn make_test_road() -> Road {
     }
 
     Road::new(
-        200,
+        100,
         0.3,
         vehicles,
         vec![Velocity::new(9), Velocity::new(9), Velocity::new(9)],

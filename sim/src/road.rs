@@ -1,6 +1,7 @@
 use crate::typedef::{Position, Road, Vehicle, Velocity};
 use std::cmp::min;
 use std::io::{stdout, Write};
+use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 
 impl Road {
     pub fn new(
@@ -31,7 +32,7 @@ impl Road {
         self.vehicles = self
             .vehicles
             .clone()
-            .into_iter()
+            .into_par_iter()
             .map(|vehicle| vehicle.update(&self))
             .collect::<Vec<_>>();
     }
