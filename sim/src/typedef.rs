@@ -1,5 +1,9 @@
-use std::ops::{AddAssign, Deref, SubAssign};
+use std::{
+    ops::{AddAssign, Deref, SubAssign},
+    time::Duration,
+};
 
+#[derive(Debug, Clone)]
 pub struct Road {
     pub len: u8,
     pub deceleration_probability: f32,
@@ -73,4 +77,10 @@ impl Deref for Velocity {
     fn deref(&self) -> &Self::Target {
         &self.0
     }
+}
+
+pub struct IterationInfo {
+    pub iteration: usize,
+    pub time: Duration,
+    pub road: Road,
 }

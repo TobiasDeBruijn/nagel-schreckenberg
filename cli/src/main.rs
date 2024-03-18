@@ -7,7 +7,7 @@ use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{registry, EnvFilter};
 
-use sim::typedef::{Position, Road, Vehicle, Velocity};
+use sim::typedef::{IterationInfo, Position, Road, Vehicle, Velocity};
 
 #[derive(Parser)]
 pub struct Args {
@@ -15,6 +15,7 @@ pub struct Args {
     #[clap(default_value = "false")]
     verbose: bool,
     #[clap(short)]
+    #[clap(default_value = "100")]
     iterations: usize,
 }
 
@@ -40,8 +41,14 @@ fn main() -> Result<()> {
     road.pretty_print();
 
     let start = Instant::now();
+    // let iteration_info = IterationInfo::new(0, start.elapsed(), road.clone());
+    // iteration_info.initialize_csv("output.csv");
+    let mut iteration = 0;
     for _ in 0..args.iterations {
+        iteration += 1;
         road = sim::step(road);
+        let iter_info = IterationInfo::new(iteration, start.elapsed(), road.clone());
+        iter_info.save_iteration_to_csv("output.csv");
     }
 
     let end = start.elapsed();

@@ -1,7 +1,7 @@
 use crate::typedef::{Position, Road, Vehicle, Velocity};
+use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 use std::cmp::min;
 use std::io::{stdout, Write};
-use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 
 impl Road {
     pub fn new(
@@ -35,6 +35,31 @@ impl Road {
             .into_par_iter()
             .map(|vehicle| vehicle.update(&self))
             .collect::<Vec<_>>();
+    }
+
+    pub fn get_average_speed(&self) -> f32 {
+        self.vehicles
+            .iter()
+            .map(|v| v.velocity.into_inner() as f32)
+            .sum::<f32>()
+            / self.vehicles.len() as f32
+    }
+
+    pub fn get_average_speed_per_lane(&self) -> Vec<f32> {
+        (0..3)
+            .into_iter()
+            .map(|lane| {
+                let vs = self
+                    .vehicles
+                    .iter()
+                    .filter(|v| v.position.y == lane)
+                    .collect::<Vec<_>>();
+                vs.iter()
+                    .map(|v| v.velocity.into_inner() as f32)
+                    .sum::<f32>()
+                    / vs.len() as f32
+            })
+            .collect()
     }
 
     pub fn get_vehicles_in_lane(&self, lane: u8) -> Vec<&Vehicle> {

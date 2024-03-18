@@ -2,6 +2,7 @@ use crate::typedef::Road;
 
 pub mod typedef;
 
+pub mod iteration_info;
 pub mod road;
 pub mod vehicle;
 
