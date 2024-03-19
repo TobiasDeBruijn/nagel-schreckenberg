@@ -36,33 +36,62 @@ fn main() -> Result<()> {
         .with(EnvFilter::from_default_env())
         .init();
 
-    //Create road for testing the printing
-    let mut road = make_test_road();
-    road.pretty_print();
+    run_iteration_with_changing_variable(args.iterations, 50);
 
-    let start = Instant::now();
-    // let iteration_info = IterationInfo::new(0, start.elapsed(), road.clone());
-    // iteration_info.initialize_csv("output.csv");
-    let mut iteration = 0;
-    for _ in 0..args.iterations {
-        iteration += 1;
-        road = sim::step(road);
-        let iter_info = IterationInfo::new(iteration, start.elapsed(), road.clone());
-        iter_info.save_iteration_to_csv("output.csv");
-    }
+    // //Create road for testing the printing
+    // let mut road = make_test_road(16);
+    // road.pretty_print();
 
-    let end = start.elapsed();
-    road.pretty_print();
+    // let current_datetime = chrono::Local::now();
 
-    println!("Elapsed: {end:?}");
+    // let csv_file_name = format!("output_{}.csv", current_datetime.format("%y%m%d%H%M%S"));
+
+    // let start = Instant::now();
+    // // let iteration_info = IterationInfo::new(0, start.elapsed(), road.clone());
+    // // iteration_info.initialize_csv("output.csv");
+    // let mut iteration = 0;
+    // for _ in 0..args.iterations {
+    //     iteration += 1;
+    //     road = sim::step(road);
+    //     let iter_info = IterationInfo::new(iteration, start.elapsed(), road.clone(), csv_file_name.as_str());
+    //     iter_info.save_iteration_to_csv();
+    // }
+
+    // let end = start.elapsed();
+    // road.pretty_print();
+
+    // println!("Elapsed: {end:?}");
 
     Ok(())
 }
 
-fn make_test_road() -> Road {
+fn run_iteration_with_changing_variable(iterations : usize, max_cars_per_lane: usize) {
+
+    let current_datetime = chrono::Local::now();
+    let csv_file_name = format!("output_{}.csv", current_datetime.format("%y%m%d%H%M%S"));
+
+    for i in 1..max_cars_per_lane {
+        let mut road = make_test_road(i);
+
+        let start = Instant::now();
+        
+        for _ in 0..iterations {
+            road = sim::step(road);
+        }
+
+        let iter_info = IterationInfo::new(i, start.elapsed(), road.clone(), csv_file_name.as_str());
+        iter_info.save_iteration_to_csv();
+
+        let end = start.elapsed();
+
+        println!("Elapsed: {end:?}");
+    }
+}
+
+fn make_test_road(cars_per_lane: usize) -> Road {
     //Add vehicles to the road to all three lanes
     let mut vehicles = Vec::new();
-    for i in 0..16 {
+    for i in 0..cars_per_lane as u8 {
         vehicles.push(Vehicle::new(Position::new(i, 0), 0.5, 0.5));
         vehicles.push(Vehicle::new(Position::new(i, 1), 0.5, 0.5));
         vehicles.push(Vehicle::new(Position::new(i, 2), 0.5, 0.5));

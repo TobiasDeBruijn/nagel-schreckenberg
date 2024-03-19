@@ -83,4 +83,5 @@ pub struct IterationInfo {
     pub iteration: usize,
     pub time: Duration,
     pub road: Road,
+    pub file_path: String,
 }
