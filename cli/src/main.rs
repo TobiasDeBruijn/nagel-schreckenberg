@@ -36,7 +36,9 @@ fn main() -> Result<()> {
         .with(EnvFilter::from_default_env())
         .init();
 
-    run_iteration_with_changing_variable(args.iterations, 50);
+    // run_iterations_with_changing_cars(args.iterations, 50);
+    // run_iterations_with_changing_lane_change_probability(args.iterations, 1.0);
+    run_iterations_with_changing_deceleration_probability(args.iterations, 1.0);
 
     // //Create road for testing the printing
     // let mut road = make_test_road(16);
@@ -65,13 +67,13 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn run_iteration_with_changing_variable(iterations : usize, max_cars_per_lane: usize) {
+fn run_iterations_with_changing_cars(iterations : usize, max_cars_per_lane: usize) {
 
     let current_datetime = chrono::Local::now();
     let csv_file_name = format!("output_{}.csv", current_datetime.format("%y%m%d%H%M%S"));
 
     for i in 1..max_cars_per_lane {
-        let mut road = make_test_road(i);
+        let mut road = make_test_road(i, 0.5, 0.3);
 
         let start = Instant::now();
         
@@ -88,18 +90,75 @@ fn run_iteration_with_changing_variable(iterations : usize, max_cars_per_lane: u
     }
 }
 
-fn make_test_road(cars_per_lane: usize) -> Road {
+fn float_range(start : f32, iter: usize, end: f32) -> Vec<f32> {
+    let mut range = Vec::new();
+    let step = (end - start) / iter as f32;
+    for i in 0..iter {
+        range.push(start + step * i as f32);
+    }
+    range
+}
+
+fn run_iterations_with_changing_lane_change_probability(iterations : usize, max_lane_change_probability: f32) {
+
+    let current_datetime = chrono::Local::now();
+    let csv_file_name = format!("output_{}.csv", current_datetime.format("%y%m%d%H%M%S"));
+    let mut iteration = 0;
+    for i in float_range(0.0, 50, max_lane_change_probability) {
+        iteration += 1;
+        let mut road = make_test_road(16, i, 0.3);
+
+        let start = Instant::now();
+        
+        for _ in 0..iterations {
+            road = sim::step(road);
+        }
+
+        let iter_info = IterationInfo::new(iteration, start.elapsed(), road.clone(), csv_file_name.as_str());
+        iter_info.save_iteration_to_csv();
+
+        let end = start.elapsed();
+
+        println!("Elapsed: {end:?}");
+    }
+}
+
+fn run_iterations_with_changing_deceleration_probability(iterations : usize, max_deceleration_probability: f32) {
+
+    let current_datetime = chrono::Local::now();
+    let csv_file_name = format!("output_{}.csv", current_datetime.format("%y%m%d%H%M%S"));
+    let mut iteration = 0;
+    for i in float_range(0.0, 50, max_deceleration_probability) {
+        iteration += 1;
+        let mut road = make_test_road(16, 0.5, i);
+
+        let start = Instant::now();
+        
+        for _ in 0..iterations {
+            road = sim::step(road);
+        }
+
+        let iter_info = IterationInfo::new(iteration, start.elapsed(), road.clone(), csv_file_name.as_str());
+        iter_info.save_iteration_to_csv();
+
+        let end = start.elapsed();
+
+        println!("Elapsed: {end:?}, deceleration_probability: {i}");
+    }
+}
+
+fn make_test_road(cars_per_lane: usize, lane_change_probability: f32, deceleration_probability: f32) -> Road {
     //Add vehicles to the road to all three lanes
     let mut vehicles = Vec::new();
     for i in 0..cars_per_lane as u8 {
-        vehicles.push(Vehicle::new(Position::new(i, 0), 0.5, 0.5));
-        vehicles.push(Vehicle::new(Position::new(i, 1), 0.5, 0.5));
-        vehicles.push(Vehicle::new(Position::new(i, 2), 0.5, 0.5));
+        vehicles.push(Vehicle::new(Position::new(i, 0), lane_change_probability, lane_change_probability));
+        vehicles.push(Vehicle::new(Position::new(i, 1), lane_change_probability, lane_change_probability));
+        vehicles.push(Vehicle::new(Position::new(i, 2), lane_change_probability, lane_change_probability));
     }
 
     Road::new(
         100,
-        0.3,
+        deceleration_probability,
         vehicles,
         vec![Velocity::new(9), Velocity::new(9), Velocity::new(9)],
     )
