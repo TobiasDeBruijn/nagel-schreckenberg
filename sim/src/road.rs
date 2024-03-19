@@ -271,7 +271,7 @@ pub fn create_road(
     random_car_start_pos: bool,
     random_car_start_speed: bool,
 ) -> Road {
-    let amount_of_cars = (length as f32 * density) as usize;
+    let amount_of_cars = (length as f32 * density * 3.0) as usize;
 
     if speed_per_lane.is_empty() {
         speed_per_lane = vec![9, 9, 9];
@@ -287,15 +287,22 @@ pub fn create_road(
     let mut vehicles = Vec::new();
 
     for i in 0..amount_of_cars {
-        let lane = i % 3;
-        let x = if random_car_start_pos {
-            rand::random::<u8>() % length as u8
-        } else {
-            (i * 3) as u8
-        };
+        let mut lane = i % 3;
+        let mut x = (i / 3) as u8;
+        if random_car_start_pos {
+            lane = rand::random::<usize>() % 3;
+            x = rand::random::<u8>() % length as u8;
+            while vehicles
+                .iter()
+                .any(|v: &Vehicle| v.position.x == x && v.position.y == lane as u8)
+            {
+                lane = rand::random::<usize>() % 3;
+                x = rand::random::<u8>() % length as u8;
+            }
+        }
 
         let speed = if random_car_start_speed {
-            Velocity::new(rand::random::<u8>() % 30)
+            Velocity::new(rand::random::<u8>() % speed_per_lane[lane] + 1)
         } else {
             Velocity::new(0)
         };

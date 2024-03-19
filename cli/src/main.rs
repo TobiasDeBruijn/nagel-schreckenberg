@@ -40,6 +40,9 @@ fn main() -> Result<()> {
     // run_iterations_with_changing_deceleration_probability(args.iterations, 1.0);
     run_iterations_with_changing_density(args.iterations, 1.0);
 
+    // let road = create_road(100, 0.5, vec![5, 5, 5], 0.5, 0.4, true, true);
+    // road.pretty_print();
+
     // //Create road for testing the printing
     // let mut road = make_test_road(16);
     // road.pretty_print();
