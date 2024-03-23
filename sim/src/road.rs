@@ -46,7 +46,7 @@ impl Road {
     }
 
     pub fn get_density(&self) -> f32 {
-        self.vehicles.len() as f32 / self.len as f32
+        (self.vehicles.len() as f32 / self.len as f32) / 3.0
     }
 
     pub fn get_flow(&self) -> f32 {

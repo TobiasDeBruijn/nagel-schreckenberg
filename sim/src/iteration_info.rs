@@ -1,5 +1,5 @@
 use crate::typedef::{IterationInfo, Road};
-use std::{io::Write, time::Duration};
+use std::time::Duration;
 
 impl IterationInfo {
     pub fn new(iteration: usize, time: Duration, road: Road) -> Self {
@@ -28,5 +28,14 @@ impl IterationInfo {
             max_speed_per_lane,
             flow,
         }
+    }
+
+    pub fn add_averages_to_info(&mut self, average_time: f32, average_speed: f32, average_speed_per_lane: Vec<f32>, average_flow: f32) -> IterationInfo {
+        self.time = Duration::from_secs_f32(average_time);
+        self.average_speed = average_speed;
+        self.average_speed_per_lane = average_speed_per_lane;
+        self.flow = average_flow;
+
+        self.clone()
     }
 }

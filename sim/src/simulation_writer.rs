@@ -1,8 +1,8 @@
 use std::io::Write;
 
-use crate::typedef::{IterationInfo, IterationWriter};
+use crate::typedef::{IterationInfo, SimulationWriter};
 
-impl IterationWriter {
+impl SimulationWriter {
     pub fn new(file_path: &str) -> Self {
         Self {
             file_path: file_path.to_string(),
@@ -31,10 +31,11 @@ impl IterationWriter {
             iteration_info.iteration,
             iteration_info.time.as_secs_f32(),
             iteration_info.density,
-            iteration_info.average_speed,
-            iteration_info.average_speed_per_lane[0],
-            iteration_info.average_speed_per_lane[1],
-            iteration_info.average_speed_per_lane[2],
+            //Also check if Nan 
+            if iteration_info.average_speed.is_nan() {0.0} else {iteration_info.average_speed},
+            if iteration_info.average_speed_per_lane[0].is_nan() {0.0} else {iteration_info.average_speed_per_lane[0]},
+            if iteration_info.average_speed_per_lane[1].is_nan() {0.0} else {iteration_info.average_speed_per_lane[1]},
+            if iteration_info.average_speed_per_lane[2].is_nan() {0.0} else {iteration_info.average_speed_per_lane[2]},
             iteration_info.lane_change_probability,
             iteration_info.deceleration_probability,
             iteration_info.max_speed_per_lane[0],

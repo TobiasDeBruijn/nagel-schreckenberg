@@ -79,6 +79,7 @@ impl Deref for Velocity {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct IterationInfo {
     pub iteration: usize,
     pub time: Duration,
@@ -92,21 +93,22 @@ pub struct IterationInfo {
     pub flow: f32,
 }
 
-pub struct IterationWriter {
+pub struct SimulationWriter {
     pub file_path: String,
 }
 
-pub enum IterationRunnerType {
+#[derive(Debug, Clone)]
+pub enum SimulationType {
     Density(f32, f32, f32),
     LaneChange(f32, f32, f32),
     Deceleration(f32, f32, f32),
 }
 
-pub struct SimulationRunner {
+pub struct SimulationHandler {
     pub num_simulations: usize,
-    pub iterations: usize,
-    pub sim_type: IterationRunnerType,
-    pub file_path: String,
+    pub iterations_per_simulation: usize,
+    pub sim_type: SimulationType,
+    pub simulation_writer: SimulationWriter,
 }
 
 //The simulation runs for a certain number of simulations, we take the average of the results
