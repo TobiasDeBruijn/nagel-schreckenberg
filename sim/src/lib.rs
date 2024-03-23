@@ -3,6 +3,8 @@ use crate::typedef::Road;
 pub mod typedef;
 
 pub mod iteration_info;
+pub mod iteration_writer;
+pub mod iterations_runner;
 pub mod road;
 pub mod vehicle;
 

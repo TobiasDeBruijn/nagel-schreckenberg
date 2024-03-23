@@ -82,6 +82,34 @@ impl Deref for Velocity {
 pub struct IterationInfo {
     pub iteration: usize,
     pub time: Duration,
-    pub road: Road,
+    pub average_speed: f32,
+    pub average_speed_per_lane: Vec<f32>,
+    pub vehicle_count: usize,
+    pub density: f32,
+    pub lane_change_probability: f32,
+    pub deceleration_probability: f32,
+    pub max_speed_per_lane: Vec<u8>,
+    pub flow: f32,
+}
+
+pub struct IterationWriter {
     pub file_path: String,
 }
+
+pub enum IterationRunnerType {
+    Density(f32, f32, f32),
+    LaneChange(f32, f32, f32),
+    Deceleration(f32, f32, f32),
+}
+
+pub struct SimulationRunner {
+    pub num_simulations: usize,
+    pub iterations: usize,
+    pub sim_type: IterationRunnerType,
+    pub file_path: String,
+}
+
+//The simulation runs for a certain number of simulations, we take the average of the results
+//The amount of simulations is determined by the start, end, and step values
+//Each simulation runs for a certain number of iterations
+//Each iteration is a step in the simulation

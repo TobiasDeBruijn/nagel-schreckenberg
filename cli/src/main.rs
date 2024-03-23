@@ -8,7 +8,7 @@ use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{registry, EnvFilter};
 
-use sim::typedef::{IterationInfo, Position, Road, Vehicle, Velocity};
+use sim::typedef::{IterationInfo, IterationWriter};
 
 #[derive(Parser)]
 pub struct Args {
@@ -37,48 +37,57 @@ fn main() -> Result<()> {
         .with(EnvFilter::from_default_env())
         .init();
 
-    // run_iterations_with_changing_deceleration_probability(args.iterations, 1.0);
-    run_iterations_with_changing_density(args.iterations, 1.0);
+    // run_iterations_with_changing_density(args.iterations, 0.5);
+    // run_iterations_with_changing_lane_change_probability(args.iterations, 0.5);
 
-    // let road = create_road(100, 0.5, vec![5, 5, 5], 0.5, 0.4, true, true);
-    // road.pretty_print();
+    let start = Instant::now();
 
-    // //Create road for testing the printing
-    // let mut road = make_test_road(16);
-    // road.pretty_print();
+    let current_datetime = chrono::Local::now();
+    let csv_file_name = format!("density_{}.csv", current_datetime.format("%y%m%d%H%M%S"));
+    let iteration_writer = IterationWriter::new(csv_file_name.as_str());
 
-    // let current_datetime = chrono::Local::now();
+    let iteration_infos = run_iterations_with_changing_density(args.iterations, 0.5);
 
-    // let csv_file_name = format!("output_{}.csv", current_datetime.format("%y%m%d%H%M%S"));
+    iteration_writer.write_iteration_infos_to_csv(&iteration_infos);
 
-    // let start = Instant::now();
-    // // let iteration_info = IterationInfo::new(0, start.elapsed(), road.clone());
-    // // iteration_info.initialize_csv("output.csv");
-    // let mut iteration = 0;
-    // for _ in 0..args.iterations {
-    //     iteration += 1;
-    //     road = sim::step(road);
-    //     let iter_info = IterationInfo::new(iteration, start.elapsed(), road.clone(), csv_file_name.as_str());
-    //     iter_info.save_iteration_to_csv();
-    // }
+    let current_datetime = chrono::Local::now();
+    let csv_file_name = format!(
+        "lane_change_{}.csv",
+        current_datetime.format("%y%m%d%H%M%S")
+    );
+    let iteration_writer = IterationWriter::new(csv_file_name.as_str());
 
-    // let end = start.elapsed();
-    // road.pretty_print();
+    let iteration_infos =
+        run_iterations_with_changing_lane_change_probability(args.iterations, 0.5);
 
-    // println!("Elapsed: {end:?}");
+    iteration_writer.write_iteration_infos_to_csv(&iteration_infos);
+
+    let current_datetime = chrono::Local::now();
+    let csv_file_name = format!(
+        "deceleration_{}.csv",
+        current_datetime.format("%y%m%d%H%M%S")
+    );
+    let iteration_writer = IterationWriter::new(csv_file_name.as_str());
+    let iteration_infos =
+        run_iterations_with_changing_deceleration_probability(args.iterations, 0.5);
+    iteration_writer.write_iteration_infos_to_csv(&iteration_infos);
+
+    let end = start.elapsed();
+
+    println!("Total Time Elapsed: {end:?}");
 
     Ok(())
 }
 
-fn run_iterations_with_changing_density(iterations: usize, max_density: f32) {
-    let current_datetime = chrono::Local::now();
-    let csv_file_name = format!("density_{}.csv", current_datetime.format("%y%m%d%H%M%S"));
+fn run_iterations_with_changing_density(iterations: usize, max_density: f32) -> Vec<IterationInfo> {
     let mut iteration = 0;
+
+    let mut iteration_infos = Vec::new();
 
     for i in float_range(0.01, 1000, max_density) {
         iteration += 1;
 
-        let mut road = create_road(100, i, vec![9, 9, 9], 0.4, 0.5, true, true);
+        let mut road = create_road(100, i, vec![5, 5, 5], 0.4, 0.5, true, true);
 
         let start = Instant::now();
 
@@ -86,18 +95,15 @@ fn run_iterations_with_changing_density(iterations: usize, max_density: f32) {
             road = sim::step(road);
         }
 
-        let iter_info = IterationInfo::new(
-            iteration,
-            start.elapsed(),
-            road.clone(),
-            csv_file_name.as_str(),
-        );
-        iter_info.save_iteration_to_csv();
+        let iteration_info = IterationInfo::new(iteration, start.elapsed(), road.clone());
 
-        let end = start.elapsed();
+        iteration_infos.push(iteration_info);
+        //let end = start.elapsed();
 
-        println!("Elapsed: {end:?}");
+        //println!("Iteration {iteration:?}, Time Elapsed: {end:?}");
     }
+
+    iteration_infos
 }
 
 fn float_range(start: f32, iter: usize, end: f32) -> Vec<f32> {
@@ -112,16 +118,13 @@ fn float_range(start: f32, iter: usize, end: f32) -> Vec<f32> {
 fn run_iterations_with_changing_lane_change_probability(
     iterations: usize,
     max_lane_change_probability: f32,
-) {
-    let current_datetime = chrono::Local::now();
-    let csv_file_name = format!(
-        "lane_change_{}.csv",
-        current_datetime.format("%y%m%d%H%M%S")
-    );
+) -> Vec<IterationInfo> {
+    let mut iteration_infos = Vec::new();
+
     let mut iteration = 0;
-    for i in float_range(0.0, 50, max_lane_change_probability) {
+    for i in float_range(0.0, 1000, max_lane_change_probability) {
         iteration += 1;
-        let mut road = make_test_road(16, i, 0.3);
+        let mut road = create_road(100, 0.3, vec![5, 5, 5], 0.4, i, true, true);
 
         let start = Instant::now();
 
@@ -129,34 +132,29 @@ fn run_iterations_with_changing_lane_change_probability(
             road = sim::step(road);
         }
 
-        let iter_info = IterationInfo::new(
-            iteration,
-            start.elapsed(),
-            road.clone(),
-            csv_file_name.as_str(),
-        );
-        iter_info.save_iteration_to_csv();
+        let iteration_info = IterationInfo::new(iteration, start.elapsed(), road.clone());
 
-        let end = start.elapsed();
+        iteration_infos.push(iteration_info);
+        // let end = start.elapsed();
 
-        println!("Elapsed: {end:?}");
+        // println!("Iteration {iteration:?}, Time Elapsed: {end:?}");
     }
+
+    iteration_infos
 }
 
 fn run_iterations_with_changing_deceleration_probability(
     iterations: usize,
     max_deceleration_probability: f32,
-) {
-    let current_datetime = chrono::Local::now();
-    let csv_file_name = format!(
-        "deceleration_{}.csv",
-        current_datetime.format("%y%m%d%H%M%S")
-    );
+) -> Vec<IterationInfo> {
     let mut iteration = 0;
+
+    let mut iteration_infos = Vec::new();
+
     for i in float_range(0.0, 1000, max_deceleration_probability) {
         iteration += 1;
 
-        let mut road = create_road(100, 0.3, vec![9, 9, 9], i, 0.5, true, true);
+        let mut road = create_road(100, 0.3, vec![5, 5, 5], i, 0.5, true, true);
 
         let start = Instant::now();
 
@@ -164,52 +162,14 @@ fn run_iterations_with_changing_deceleration_probability(
             road = sim::step(road);
         }
 
-        let iter_info = IterationInfo::new(
-            iteration,
-            start.elapsed(),
-            road.clone(),
-            csv_file_name.as_str(),
-        );
-        iter_info.save_iteration_to_csv();
+        let iteration_info = IterationInfo::new(iteration, start.elapsed(), road.clone());
 
-        let end = start.elapsed();
+        iteration_infos.push(iteration_info);
 
-        println!("Elapsed: {end:?}, deceleration_probability: {i}");
-    }
-}
+        // let end = start.elapsed();
 
-fn make_test_road(
-    cars_per_lane: usize,
-    lane_change_probability: f32,
-    deceleration_probability: f32,
-) -> Road {
-    //Add vehicles to the road to all three lanes
-    let mut vehicles = Vec::new();
-    for i in 0..cars_per_lane as u8 {
-        vehicles.push(Vehicle::new(
-            Position::new(i, 0),
-            None,
-            lane_change_probability,
-            lane_change_probability,
-        ));
-        vehicles.push(Vehicle::new(
-            Position::new(i, 1),
-            None,
-            lane_change_probability,
-            lane_change_probability,
-        ));
-        vehicles.push(Vehicle::new(
-            Position::new(i, 2),
-            None,
-            lane_change_probability,
-            lane_change_probability,
-        ));
+        // println!("Iteration {iteration:?}, Time Elapsed: {end:?}");
     }
 
-    Road::new(
-        100,
-        deceleration_probability,
-        vehicles,
-        vec![Velocity::new(9), Velocity::new(9), Velocity::new(9)],
-    )
+    iteration_infos
 }
