@@ -31,7 +31,6 @@ impl SimulationWriter {
             iteration_info.iteration,
             iteration_info.time.as_secs_f32(),
             iteration_info.density,
-            //Also check if Nan 
             if iteration_info.average_speed.is_nan() {0.0} else {iteration_info.average_speed},
             if iteration_info.average_speed_per_lane[0].is_nan() {0.0} else {iteration_info.average_speed_per_lane[0]},
             if iteration_info.average_speed_per_lane[1].is_nan() {0.0} else {iteration_info.average_speed_per_lane[1]},

@@ -1,42 +1,67 @@
-use std::time::Duration;
+use crate::{iterations_runner::run_iterations, road::create_road, typedef::{IterationInfo, SimulationsHandler, SimulationType, SimulationWriter}};
 
-use crate::{iterations_runner::{float_range_step, run_iterations}, road::create_road, typedef::{IterationInfo, SimulationHandler, SimulationType, SimulationWriter}};
-
-impl SimulationHandler {
-    pub fn new(num_simulations : usize, iterations_per_simulation : usize, sim_type : SimulationType, simulation_writer : SimulationWriter) -> Self {
+impl SimulationsHandler {
+    pub fn new(num_simulations : usize, iterations_per_simulation : usize, sim_type : SimulationType, simulation_writer : SimulationWriter, verbose : bool) -> Self {
         Self {
             num_simulations,
             iterations_per_simulation,
             sim_type,
             simulation_writer,
+            verbose
         }
     }
 
-    pub fn run_simulation(iterations_per_simulation : usize, sim_type : SimulationType) -> Vec<IterationInfo> {
+    pub fn run_simulation(&self, iterations_per_simulation : usize, sim_type : SimulationType) -> Vec<IterationInfo> {
+        let road_length = 100;
+        let density = 0.3;
+        let lane_speeds = vec![5, 5, 5];
+        let deceleration_probability = 0.4;
+        let lane_change_probability = 0.4;
+
         let mut iteration = 0;
         let mut iteration_infos = Vec::new();
   
         match sim_type {
             SimulationType::Density(start, end, step) => {
-                for i in float_range_step(start, end, step) {
+                let float_range = float_range_step(start, end, step);
+                let len_float_range = float_range.len();
+
+                
+
+                for i in float_range {
                     iteration += 1;
-                    let road = create_road(100, i, vec![5, 5, 5], 0.4, 0.4, true, true);
+                    if self.verbose {
+                        print!("\tRunning iteration {} of {}\n", iteration, len_float_range);
+                    }
+                    let road = create_road(road_length, i, lane_speeds.clone(), deceleration_probability, lane_change_probability, true, true);
                     let iteration_info = run_iterations(iteration, iterations_per_simulation, road);
                     iteration_infos.push(iteration_info);
                 }
             }
             SimulationType::LaneChange(start, end, step) => {
-                for i in float_range_step(start, end, step) {
+                let float_range = float_range_step(start, end, step);
+                let len_float_range = float_range.len();
+
+                for i in float_range {
                     iteration += 1;
-                    let road = create_road(100, 0.3, vec![5, 5, 5], 0.4, i, true, true);
+                    if self.verbose {
+                        print!("\tRunning iteration {} of {}\n", iteration, len_float_range);
+                    }
+                    let road = create_road(road_length, density, lane_speeds.clone(), deceleration_probability, i, true, true);
                     let iteration_info = run_iterations(iteration, iterations_per_simulation, road);
                     iteration_infos.push(iteration_info);
                 }
             },
             SimulationType::Deceleration(start, end, step) => {
-                for i in float_range_step(start, end, step) {
+                let float_range = float_range_step(start, end, step);
+                let len_float_range = float_range.len();
+
+                for i in float_range {
                     iteration += 1;
-                    let road = create_road(100, 0.3, vec![5, 5, 5], i, 0.4, true, true);
+                    if self.verbose {
+                        print!("\tRunning iteration {} of {}\n", iteration, len_float_range);
+                    }
+                    let road = create_road(road_length, density, lane_speeds.clone(), i, deceleration_probability, true, true);
                     let iteration_info = run_iterations(iteration, iterations_per_simulation, road);
                     iteration_infos.push(iteration_info);
                 }
@@ -50,7 +75,10 @@ impl SimulationHandler {
         let mut sim_infos = Vec::new();
 
         for _ in 0..self.num_simulations {
-            let simulation_results = Self::run_simulation(self.iterations_per_simulation, self.sim_type.clone());
+            if self.verbose {
+                print!("Running simulation {} of {}\n", sim_infos.len() + 1, self.num_simulations);
+            }
+            let simulation_results = self.run_simulation(self.iterations_per_simulation, self.sim_type.clone());
             sim_infos.push(simulation_results);
         }
 
@@ -102,4 +130,15 @@ fn average_of_simulations(&self, sims : Vec<Vec<IterationInfo>>) ->  Vec<Iterati
         self.simulation_writer.write_iteration_infos_to_csv(iteration_infos);
     }
   
+}
+
+fn float_range_step(start: f32, end: f32, step: f32) -> Vec<f32> {
+    let mut range = Vec::new();
+    let mut i = start;
+    while i < end {
+        range.push(i);
+        i += step;
+    }
+
+    range
 }

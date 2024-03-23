@@ -6,7 +6,7 @@ use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{registry, EnvFilter};
 
-use sim::typedef::{SimulationHandler, SimulationType, SimulationWriter};
+use sim::typedef::{SimulationsHandler, SimulationType, SimulationWriter};
 
 #[derive(Parser)]
 pub struct Args {
@@ -41,11 +41,12 @@ fn main() -> Result<()> {
     let current_datetime = chrono::Local::now();
     let csv_file_name = format!("density_{}.csv", current_datetime.format("%y%m%d%H%M%S"));
 
-    let simulation_handler = SimulationHandler::new(
+    let simulation_handler = SimulationsHandler::new(
         args.simulations,
         args.iterations,
         SimulationType::Density(0.01, 0.5, 0.001),
         SimulationWriter::new(&csv_file_name),
+        args.verbose,
     );
 
     let iteration_infos = simulation_handler.run_simulations();

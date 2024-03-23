@@ -3,6 +3,7 @@ use std::{
     time::Duration,
 };
 
+
 #[derive(Debug, Clone)]
 pub struct Road {
     pub len: u8,
@@ -104,11 +105,12 @@ pub enum SimulationType {
     Deceleration(f32, f32, f32),
 }
 
-pub struct SimulationHandler {
+pub struct SimulationsHandler {
     pub num_simulations: usize,
     pub iterations_per_simulation: usize,
     pub sim_type: SimulationType,
     pub simulation_writer: SimulationWriter,
+    pub verbose: bool,
 }
 
 //The simulation runs for a certain number of simulations, we take the average of the results

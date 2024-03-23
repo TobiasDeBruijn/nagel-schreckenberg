@@ -50,18 +50,7 @@ impl Road {
     }
 
     pub fn get_flow(&self) -> f32 {
-        let max_speed_opt = self
-            .speed_per_lane
-            .clone()
-            .into_iter()
-            .map(|v| v.into_inner())
-            .max();
-        if max_speed_opt.is_none() {
-            return 0.0;
-        }
-
-        let max_speed = max_speed_opt.unwrap() as f32;
-        (self.get_average_speed() / max_speed) * self.get_density()
+        self.get_average_speed() * self.get_density()
     }
 
     pub fn get_average_speed_per_lane(&self) -> Vec<f32> {
