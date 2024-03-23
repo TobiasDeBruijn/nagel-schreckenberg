@@ -1,7 +1,7 @@
 use crate::typedef::{Position, Road, Vehicle, Velocity};
+use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 use std::cmp::min;
 use std::io::{stdout, Write};
-use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 
 impl Road {
     pub fn new(
@@ -35,6 +35,39 @@ impl Road {
             .into_par_iter()
             .map(|vehicle| vehicle.update(&self))
             .collect::<Vec<_>>();
+    }
+
+    pub fn get_average_speed(&self) -> f32 {
+        self.vehicles
+            .iter()
+            .map(|v| v.velocity.into_inner() as f32)
+            .sum::<f32>()
+            / self.vehicles.len() as f32
+    }
+
+    pub fn get_density(&self) -> f32 {
+        (self.vehicles.len() as f32 / self.len as f32) / 3.0
+    }
+
+    pub fn get_flow(&self) -> f32 {
+        self.get_average_speed() * self.get_density()
+    }
+
+    pub fn get_average_speed_per_lane(&self) -> Vec<f32> {
+        (0..3)
+            .into_iter()
+            .map(|lane| {
+                let vs = self
+                    .vehicles
+                    .iter()
+                    .filter(|v| v.position.y == lane)
+                    .collect::<Vec<_>>();
+                vs.iter()
+                    .map(|v| v.velocity.into_inner() as f32)
+                    .sum::<f32>()
+                    / vs.len() as f32
+            })
+            .collect()
     }
 
     pub fn get_vehicles_in_lane(&self, lane: u8) -> Vec<&Vehicle> {
@@ -226,4 +259,66 @@ impl Road {
             if avg.is_nan() { 0.0 } else { avg }
         );
     }
+}
+
+/// Create a new road
+pub fn create_road(
+    length: usize,
+    density: f32,
+    mut speed_per_lane: Vec<u8>,
+    deceleration_probability: f32,
+    lange_change_probability: f32,
+    random_car_start_pos: bool,
+    random_car_start_speed: bool,
+) -> Road {
+    let amount_of_cars = (length as f32 * density * 3.0) as usize;
+
+    if speed_per_lane.is_empty() {
+        speed_per_lane = vec![9, 9, 9];
+    }
+
+    if speed_per_lane.len() < 3 {
+        panic!("Speed per lane must have at least 3 speeds")
+    }
+
+    //Remove any extra speeds
+    speed_per_lane.truncate(3);
+
+    let mut vehicles = Vec::new();
+
+    for i in 0..amount_of_cars {
+        let mut lane = i % 3;
+        let mut x = (i / 3) as u8;
+        if random_car_start_pos {
+            lane = rand::random::<usize>() % 3;
+            x = rand::random::<u8>() % length as u8;
+            while vehicles
+                .iter()
+                .any(|v: &Vehicle| v.position.x == x && v.position.y == lane as u8)
+            {
+                lane = rand::random::<usize>() % 3;
+                x = rand::random::<u8>() % length as u8;
+            }
+        }
+
+        let speed = if random_car_start_speed {
+            Velocity::new(rand::random::<u8>() % speed_per_lane[lane] + 1)
+        } else {
+            Velocity::new(0)
+        };
+
+        vehicles.push(Vehicle::new(
+            Position::new(x, lane as u8),
+            Some(speed),
+            lange_change_probability,
+            lange_change_probability,
+        ));
+    }
+
+    Road::new(
+        length as u8,
+        deceleration_probability,
+        vehicles,
+        speed_per_lane.into_iter().map(Velocity::new).collect(),
+    )
 }

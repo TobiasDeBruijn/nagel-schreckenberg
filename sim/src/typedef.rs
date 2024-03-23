@@ -1,5 +1,10 @@
-use std::ops::{AddAssign, Deref, SubAssign};
+use std::{
+    ops::{AddAssign, Deref, SubAssign},
+    time::Duration,
+};
 
+
+#[derive(Debug, Clone)]
 pub struct Road {
     pub len: u8,
     pub deceleration_probability: f32,
@@ -74,3 +79,41 @@ impl Deref for Velocity {
         &self.0
     }
 }
+
+#[derive(Debug, Clone)]
+pub struct IterationInfo {
+    pub iteration: usize,
+    pub time: Duration,
+    pub average_speed: f32,
+    pub average_speed_per_lane: Vec<f32>,
+    pub vehicle_count: usize,
+    pub density: f32,
+    pub lane_change_probability: f32,
+    pub deceleration_probability: f32,
+    pub max_speed_per_lane: Vec<u8>,
+    pub flow: f32,
+}
+
+pub struct SimulationWriter {
+    pub file_path: String,
+}
+
+#[derive(Debug, Clone)]
+pub enum SimulationType {
+    Density(f32, f32, f32),
+    LaneChange(f32, f32, f32),
+    Deceleration(f32, f32, f32),
+}
+
+pub struct SimulationsHandler {
+    pub num_simulations: usize,
+    pub iterations_per_simulation: usize,
+    pub sim_type: SimulationType,
+    pub simulation_writer: SimulationWriter,
+    pub verbose: bool,
+}
+
+//The simulation runs for a certain number of simulations, we take the average of the results
+//The amount of simulations is determined by the start, end, and step values
+//Each simulation runs for a certain number of iterations
+//Each iteration is a step in the simulation

@@ -4,10 +4,20 @@ use rand::Rng;
 use std::cmp::min;
 
 impl Vehicle {
-    pub fn new(position: Position, move_left_chance: f32, move_right_chance: f32) -> Self {
+    pub fn new(
+        position: Position,
+        mut vel: Option<Velocity>,
+        move_left_chance: f32,
+        move_right_chance: f32,
+    ) -> Self {
+        if vel == None {
+            vel = Some(Velocity::new(0));
+        }
+        let velocity = vel.unwrap();
+
         Self {
             position,
-            velocity: Velocity::new(0),
+            velocity,
             move_left_chance,
             move_right_chance,
         }

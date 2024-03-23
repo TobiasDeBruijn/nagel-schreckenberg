@@ -1,13 +1,12 @@
 use clap::Parser;
 use color_eyre::Result;
 use std::env::{set_var, var};
-use std::time::Instant;
 use tracing_subscriber::fmt::layer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{registry, EnvFilter};
 
-use sim::typedef::{Position, Road, Vehicle, Velocity};
+use sim::typedef::{SimulationsHandler, SimulationType, SimulationWriter};
 
 #[derive(Parser)]
 pub struct Args {
@@ -15,6 +14,10 @@ pub struct Args {
     #[clap(default_value = "false")]
     verbose: bool,
     #[clap(short)]
+    #[clap(default_value = "50")]
+    simulations: usize,
+    #[clap(short)]
+    #[clap(default_value = "100")]
     iterations: usize,
 }
 
@@ -35,36 +38,19 @@ fn main() -> Result<()> {
         .with(EnvFilter::from_default_env())
         .init();
 
-    //Create road for testing the printing
-    let mut road = make_test_road();
-    road.pretty_print();
+    let current_datetime = chrono::Local::now();
+    let csv_file_name = format!("density_{}.csv", current_datetime.format("%y%m%d%H%M%S"));
 
-    let start = Instant::now();
-    for _ in 0..args.iterations {
-        road = sim::step(road);
-    }
+    let simulation_handler = SimulationsHandler::new(
+        args.simulations,
+        args.iterations,
+        SimulationType::Density(0.01, 0.5, 0.001),
+        SimulationWriter::new(&csv_file_name),
+        args.verbose,
+    );
 
-    let end = start.elapsed();
-    road.pretty_print();
+    let iteration_infos = simulation_handler.run_simulations();
 
-    println!("Elapsed: {end:?}");
-
+    simulation_handler.write_simulation_results_to_csv(&iteration_infos);    
     Ok(())
-}
-
-fn make_test_road() -> Road {
-    //Add vehicles to the road to all three lanes
-    let mut vehicles = Vec::new();
-    for i in 0..16 {
-        vehicles.push(Vehicle::new(Position::new(i, 0), 0.5, 0.5));
-        vehicles.push(Vehicle::new(Position::new(i, 1), 0.5, 0.5));
-        vehicles.push(Vehicle::new(Position::new(i, 2), 0.5, 0.5));
-    }
-
-    Road::new(
-        100,
-        0.3,
-        vehicles,
-        vec![Velocity::new(9), Velocity::new(9), Velocity::new(9)],
-    )
 }
