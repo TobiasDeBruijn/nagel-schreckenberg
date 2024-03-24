@@ -53,7 +53,7 @@ fn main() -> Result<()> {
         .init();
 
     let now = chrono::Utc::now();
-    let fmt = now.format("%Y-%m-%d_%H:%M").to_string();
+    let fmt = now.format("%Y-%m-%d_%H%M").to_string();
 
     let simulation_handler = match args.parameter_under_test {
         ParameterUnderTest::Density => SimulationsHandler::new(

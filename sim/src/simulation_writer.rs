@@ -19,40 +19,40 @@ impl SimulationWriter {
             d = CSV_DELIMITER
         );
 
-        let mut f = fs::File::create(&self.file_path)?;
+        let mut f = fs::File::create(&self.file_path).unwrap();
         f.write_all(header.as_bytes()).unwrap();
     }
 
-    pub fn save_iteration_to_csv(&self, iteration_info: &IterationInfo) {
+    pub fn save_iteration_to_csv(&self, i_inf: &IterationInfo) {
         let csv = format!(
             "{}{d}{}{d}{}{d}{}{d}{}{d}{}{d}{}{d}{}{d}{}{d}{}{d}{}{d}{}{d}{}{d}{}\n",
-            iteration_info.iteration,
-            iteration_info.time.as_secs_f32(),
-            iteration_info.density,
-            iteration_info
+            i_inf.iteration,
+            i_inf.time.as_secs_f32(),
+            i_inf.density,
+            i_inf
                 .average_speed
                 .is_nan()
                 .then(|| 0.0)
-                .unwrap_or_else(|| iteration_info.average_speed),
-            iteration_info.average_speed_per_lane[0]
+                .unwrap_or_else(|| i_inf.average_speed),
+            i_inf.average_speed_per_lane[0]
                 .is_nan()
                 .then(|| 0.0)
-                .unwrap_or_else(|| iteration_info.average_speed_per_lane[0]),
-            iteration_info.average_speed_per_lane[1]
+                .unwrap_or_else(|| i_inf.average_speed_per_lane[0]),
+            i_inf.average_speed_per_lane[1]
                 .is_nan()
                 .then(|| 0.0)
-                .unwrap_or_else(|| iteration_info.average_speed_per_lane[1]),
-            iteration_info.average_speed_per_lane[2]
+                .unwrap_or_else(|| i_inf.average_speed_per_lane[1]),
+            i_inf.average_speed_per_lane[2]
                 .is_nan()
                 .then(|| 0.0)
-                .unwrap_or_else(|| iteration_info.average_speed_per_lane[2]),
-            iteration_info.lane_change_probability,
-            iteration_info.deceleration_probability,
-            iteration_info.max_speed_per_lane[0],
-            iteration_info.max_speed_per_lane[1],
-            iteration_info.max_speed_per_lane[2],
-            iteration_info.flow,
-            iteration_info.vehicle_count,
+                .unwrap_or_else(|| i_inf.average_speed_per_lane[2]),
+            i_inf.lane_change_probability,
+            i_inf.deceleration_probability,
+            i_inf.max_speed_per_lane[0],
+            i_inf.max_speed_per_lane[1],
+            i_inf.max_speed_per_lane[2],
+            i_inf.flow,
+            i_inf.vehicle_count,
             d = CSV_DELIMITER,
         );
 
