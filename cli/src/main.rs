@@ -2,6 +2,7 @@ use std::env::{set_var, var};
 
 use clap::{Parser, ValueEnum};
 use color_eyre::Result;
+use sim::simulation_handler;
 use tracing_subscriber::fmt::layer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -25,7 +26,11 @@ pub struct Args {
     #[clap(default_value = "100")]
     iterations: usize,
     #[clap(long, short, value_enum)]
+    #[clap(default_value = "density")]
     parameter_under_test: ParameterUnderTest,
+    #[clap(short)]
+    #[clap(default_value = "100")]
+    road_len: u8,
 }
 
 #[derive(ValueEnum, Clone)]
@@ -55,31 +60,35 @@ fn main() -> Result<()> {
     let now = chrono::Utc::now();
     let fmt = now.format("%Y-%m-%d_%H%M").to_string();
 
-    let simulation_handler = match args.parameter_under_test {
-        ParameterUnderTest::Density => SimulationsHandler::new(
-            args.simulations,
-            args.iterations,
-            SimulationType::Density(0.01, 0.5, 0.001),
-            SimulationWriter::new(&format!("density_{fmt}.csv")),
-            args.verbose,
-        ),
-        ParameterUnderTest::PDecel => SimulationsHandler::new(
-            args.simulations,
-            args.iterations,
-            SimulationType::Deceleration(0.01, 1.0, 0.001),
-            SimulationWriter::new(&format!("p_decel_{fmt}.csv")),
-            args.verbose,
-        ),
-        ParameterUnderTest::PLaneChange => SimulationsHandler::new(
-            args.simulations,
-            args.iterations,
-            SimulationType::LaneChange(0.01, 1.0, 0.001),
-            SimulationWriter::new(&format!("p_lane_change_{fmt}.csv")),
-            args.verbose,
-        ),
+    let sim_type = match args.parameter_under_test {
+        ParameterUnderTest::Density => SimulationType::Density(0.01, 0.5, 0.001),
+        ParameterUnderTest::PDecel => SimulationType::Deceleration(0.01, 1.0, 0.001),
+        ParameterUnderTest::PLaneChange => SimulationType::LaneChange(0.01, 1.0, 0.001),
+    };
+
+    let file_name = match args.parameter_under_test {
+        ParameterUnderTest::Density => format!("density_{fmt}.csv"),
+        ParameterUnderTest::PDecel => format!("p_decel_{fmt}.csv"),
+        ParameterUnderTest::PLaneChange => format!("p_lane_change_{fmt}.csv"),
+    };
+
+    let simulation_handler = SimulationsHandler::new(
+        args.simulations,
+        args.iterations,
+        sim_type.clone(),
+        SimulationWriter::new(&file_name),
+        args.verbose,
+    );
+
+    // Construct the MetaData
+    let metadata = sim::typedef::MetaData {
+        road_len: args.road_len,
+        num_simulations: args.simulations,
+        iterations_per_simulation: args.iterations,
+        sim_type: sim_type,
     };
 
     let iteration_infos = simulation_handler.run_simulations();
-    simulation_handler.write_simulation_results_to_csv(&iteration_infos);
+    simulation_handler.save_simulation_results(&iteration_infos, &metadata);
     Ok(())
 }

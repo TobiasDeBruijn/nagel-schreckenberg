@@ -2,7 +2,7 @@ use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
 
-use crate::typedef::{IterationInfo, SimulationWriter};
+use crate::typedef::{IterationInfo, MetaData, SimulationWriter};
 
 const CSV_DELIMITER: &str = ",";
 
@@ -66,10 +66,32 @@ impl SimulationWriter {
         file.write_all(csv.as_bytes()).unwrap();
     }
 
+    pub fn save_csv_and_metadata(&self, iteration_infos: &Vec<IterationInfo>, metadata: &MetaData) {
+        self.write_iteration_infos_to_csv(iteration_infos);
+        self.write_metadata_to_file(metadata);
+    }
+
     pub fn write_iteration_infos_to_csv(&self, iteration_infos: &Vec<IterationInfo>) {
         self.initialize_csv();
         for iteration_info in iteration_infos {
             self.save_iteration_to_csv(iteration_info);
         }
+    }
+
+    pub fn write_metadata_to_file(&self, metadata: &MetaData) {
+        //Remove .csv extension
+        let mut file_path = self.file_path.with_extension("");
+        file_path.set_extension("metadata");
+
+        let mut file = fs::File::create(file_path).unwrap();
+
+        let metadata = format!("Road Length: {}\nNumber of Simulations: {}\nIterations per Simulation: {}\nSimulation Type: {:?}",
+            metadata.road_len,
+            metadata.num_simulations,
+            metadata.iterations_per_simulation,
+            metadata.sim_type
+        );
+
+        file.write_all(metadata.as_bytes()).unwrap();
     }
 }

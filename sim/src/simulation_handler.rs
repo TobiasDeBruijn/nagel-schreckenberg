@@ -1,7 +1,7 @@
 use crate::{
     iterations_runner::run_iterations,
     road::create_road,
-    typedef::{IterationInfo, SimulationType, SimulationWriter, SimulationsHandler},
+    typedef::{IterationInfo, MetaData, SimulationType, SimulationWriter, SimulationsHandler},
 };
 
 impl SimulationsHandler {
@@ -38,13 +38,8 @@ impl SimulationsHandler {
         match sim_type {
             SimulationType::Density(start, end, step) => {
                 let float_range = float_range_step(start, end, step);
-                let len_float_range = float_range.len();
-
                 for i in float_range {
                     iteration += 1;
-                    if self.verbose {
-                        print!("\tRunning iteration {} of {}\n", iteration, len_float_range);
-                    }
                     let road = create_road(
                         road_length,
                         i,
@@ -60,13 +55,8 @@ impl SimulationsHandler {
             }
             SimulationType::LaneChange(start, end, step) => {
                 let float_range = float_range_step(start, end, step);
-                let len_float_range = float_range.len();
-
                 for i in float_range {
                     iteration += 1;
-                    if self.verbose {
-                        print!("\tRunning iteration {} of {}\n", iteration, len_float_range);
-                    }
                     let road = create_road(
                         road_length,
                         density,
@@ -82,13 +72,8 @@ impl SimulationsHandler {
             }
             SimulationType::Deceleration(start, end, step) => {
                 let float_range = float_range_step(start, end, step);
-                let len_float_range = float_range.len();
-
                 for i in float_range {
                     iteration += 1;
-                    if self.verbose {
-                        print!("\tRunning iteration {} of {}\n", iteration, len_float_range);
-                    }
                     let road = create_road(
                         road_length,
                         density,
@@ -127,6 +112,10 @@ impl SimulationsHandler {
     }
 
     fn average_of_simulations(&self, sims: Vec<Vec<IterationInfo>>) -> Vec<IterationInfo> {
+        if self.verbose {
+            print!("Calculating averages of simulations\n");
+        }
+
         let mut average_infos: Vec<IterationInfo> = Vec::new();
 
         let num_of_rows = sims[0].len();
@@ -176,9 +165,16 @@ impl SimulationsHandler {
         average_infos
     }
 
-    pub fn write_simulation_results_to_csv(&self, iteration_infos: &Vec<IterationInfo>) {
+    pub fn save_simulation_results(
+        &self,
+        iteration_infos: &Vec<IterationInfo>,
+        metadata: &MetaData,
+    ) {
+        if self.verbose {
+            print!("Writing simulation results to csv\n");
+        }
         self.simulation_writer
-            .write_iteration_infos_to_csv(iteration_infos);
+            .save_csv_and_metadata(iteration_infos, metadata);
     }
 }
 

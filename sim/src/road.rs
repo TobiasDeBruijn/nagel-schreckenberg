@@ -274,7 +274,8 @@ pub fn create_road(
     let amount_of_cars = (length as f32 * density * 3.0) as usize;
 
     if speed_per_lane.is_empty() {
-        speed_per_lane = vec![9, 9, 9];
+        print!("No speeds provided, defaulting to 5 for all lanes");
+        speed_per_lane = vec![5, 5, 5];
     }
 
     if speed_per_lane.len() < 3 {

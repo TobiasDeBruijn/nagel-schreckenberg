@@ -94,15 +94,39 @@ pub struct IterationInfo {
     pub flow: f32,
 }
 
+pub struct MetaData {
+    pub road_len: u8,
+    pub num_simulations: usize,
+    pub iterations_per_simulation: usize,
+    pub sim_type: SimulationType,
+}
+
 pub struct SimulationWriter {
     pub file_path: PathBuf,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub enum SimulationType {
     Density(f32, f32, f32),
     LaneChange(f32, f32, f32),
     Deceleration(f32, f32, f32),
+}
+
+//Determine how to print the simulation type to file
+impl std::fmt::Debug for SimulationType {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            SimulationType::Density(start, end, step) => {
+                write!(f, "Density: {} to {} by {}", start, end, step)
+            }
+            SimulationType::LaneChange(start, end, step) => {
+                write!(f, "Lane Change: {} to {} by {}", start, end, step)
+            }
+            SimulationType::Deceleration(start, end, step) => {
+                write!(f, "Deceleration: {} to {} by {}", start, end, step)
+            }
+        }
+    }
 }
 
 pub struct SimulationsHandler {
