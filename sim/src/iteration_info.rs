@@ -30,7 +30,13 @@ impl IterationInfo {
         }
     }
 
-    pub fn add_averages_to_info(&mut self, average_time: f32, average_speed: f32, average_speed_per_lane: Vec<f32>, average_flow: f32) -> IterationInfo {
+    pub fn add_averages_to_info(
+        &mut self,
+        average_time: f32,
+        average_speed: f32,
+        average_speed_per_lane: Vec<f32>,
+        average_flow: f32,
+    ) -> IterationInfo {
         self.time = Duration::from_secs_f32(average_time);
         self.average_speed = average_speed;
         self.average_speed_per_lane = average_speed_per_lane;

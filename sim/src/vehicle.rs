@@ -134,10 +134,6 @@ impl Vehicle {
         match previous_vehicle {
             Some(v) => {
                 let distance_to_previous_vehicle = road.dist_between_vehicles(pos.x, v.position.x);
-                // let distance_to_previous_vehicle =
-                //     ((pos.x as i16 - v.position.x as i16 + road.len as i16 - 1) % road.len as i16)
-                //         as u8;
-
                 distance_to_previous_vehicle > v.velocity.into_inner()
             }
             None => true,

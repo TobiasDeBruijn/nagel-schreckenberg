@@ -1,8 +1,8 @@
+use std::path::PathBuf;
 use std::{
     ops::{AddAssign, Deref, SubAssign},
     time::Duration,
 };
-
 
 #[derive(Debug, Clone)]
 pub struct Road {
@@ -95,7 +95,7 @@ pub struct IterationInfo {
 }
 
 pub struct SimulationWriter {
-    pub file_path: String,
+    pub file_path: PathBuf,
 }
 
 #[derive(Debug, Clone)]

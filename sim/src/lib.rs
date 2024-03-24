@@ -3,11 +3,11 @@ use crate::typedef::Road;
 pub mod typedef;
 
 pub mod iteration_info;
-pub mod simulation_writer;
 pub mod iterations_runner;
 pub mod road;
-pub mod vehicle;
 pub mod simulation_handler;
+pub mod simulation_writer;
+pub mod vehicle;
 
 // 1. Car checks maximum speed it can achieve on it's current position (x, lane) and adjacent lane (x, lane+1).
 // 2. If the potential maximal speed on lane+1 is higher it checks safe conditions:
