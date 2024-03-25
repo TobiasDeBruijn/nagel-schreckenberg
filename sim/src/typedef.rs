@@ -135,9 +135,5 @@ pub struct SimulationsHandler {
     pub sim_type: SimulationType,
     pub simulation_writer: SimulationWriter,
     pub verbose: bool,
+    pub lane_speeds: Vec<u8>
 }
-
-//The simulation runs for a certain number of simulations, we take the average of the results
-//The amount of simulations is determined by the start, end, and step values
-//Each simulation runs for a certain number of iterations
-//Each iteration is a step in the simulation

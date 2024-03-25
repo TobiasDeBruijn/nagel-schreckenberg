@@ -2,7 +2,6 @@ use std::env::{set_var, var};
 
 use clap::{Parser, ValueEnum};
 use color_eyre::Result;
-use sim::simulation_handler;
 use tracing_subscriber::fmt::layer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -31,6 +30,12 @@ pub struct Args {
     #[clap(short)]
     #[clap(default_value = "100")]
     road_len: u8,
+    #[clap(long)]
+    l1: u8,
+    #[clap(long)]
+    l2: u8,
+    #[clap(long)]
+    l3: u8,
 }
 
 #[derive(ValueEnum, Clone)]
@@ -78,6 +83,7 @@ fn main() -> Result<()> {
         sim_type.clone(),
         SimulationWriter::new(&file_name),
         args.verbose,
+        vec![args.l1, args.l2, args.l3],
     );
 
     // Construct the MetaData
@@ -85,7 +91,7 @@ fn main() -> Result<()> {
         road_len: args.road_len,
         num_simulations: args.simulations,
         iterations_per_simulation: args.iterations,
-        sim_type: sim_type,
+        sim_type,
     };
 
     let iteration_infos = simulation_handler.run_simulations();

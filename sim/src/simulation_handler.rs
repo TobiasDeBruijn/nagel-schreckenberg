@@ -11,6 +11,7 @@ impl SimulationsHandler {
         sim_type: SimulationType,
         simulation_writer: SimulationWriter,
         verbose: bool,
+        lane_speeds: Vec<u8>,
     ) -> Self {
         Self {
             num_simulations,
@@ -18,6 +19,7 @@ impl SimulationsHandler {
             sim_type,
             simulation_writer,
             verbose,
+            lane_speeds
         }
     }
 
@@ -28,7 +30,6 @@ impl SimulationsHandler {
     ) -> Vec<IterationInfo> {
         let road_length = 100;
         let density = 0.3;
-        let lane_speeds = vec![5, 5, 5];
         let deceleration_probability = 0.4;
         let lane_change_probability = 0.4;
 
@@ -43,7 +44,7 @@ impl SimulationsHandler {
                     let road = create_road(
                         road_length,
                         i,
-                        lane_speeds.clone(),
+                        self.lane_speeds.clone(),
                         deceleration_probability,
                         lane_change_probability,
                         true,
@@ -60,7 +61,7 @@ impl SimulationsHandler {
                     let road = create_road(
                         road_length,
                         density,
-                        lane_speeds.clone(),
+                        self.lane_speeds.clone(),
                         deceleration_probability,
                         i,
                         true,
@@ -77,7 +78,7 @@ impl SimulationsHandler {
                     let road = create_road(
                         road_length,
                         density,
-                        lane_speeds.clone(),
+                        self.lane_speeds.clone(),
                         i,
                         deceleration_probability,
                         true,
