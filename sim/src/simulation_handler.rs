@@ -31,7 +31,7 @@ impl SimulationsHandler {
         let road_length = 100;
         let density = 0.3;
         let deceleration_probability = 0.4;
-        let lane_change_probability = 0.4;
+        let lane_change_probability = 0.8;
 
         let mut iteration = 0;
         let mut iteration_infos = Vec::new();
