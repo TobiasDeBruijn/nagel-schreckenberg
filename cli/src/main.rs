@@ -92,6 +92,7 @@ fn main() -> Result<()> {
         num_simulations: args.simulations,
         iterations_per_simulation: args.iterations,
         sim_type,
+        speeds_per_lane: vec![args.l1, args.l2, args.l3]
     };
 
     let iteration_infos = simulation_handler.run_simulations();

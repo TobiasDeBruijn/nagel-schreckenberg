@@ -85,11 +85,14 @@ impl SimulationWriter {
 
         let mut file = fs::File::create(file_path).unwrap();
 
-        let metadata = format!("Road Length: {}\nNumber of Simulations: {}\nIterations per Simulation: {}\nSimulation Type: {:?}",
+        let metadata = format!("Road Length: {}\nNumber of Simulations: {}\nIterations per Simulation: {}\nSimulation Type: {:?}\nSpeeds per lane: {} {} {}",
             metadata.road_len,
             metadata.num_simulations,
             metadata.iterations_per_simulation,
-            metadata.sim_type
+            metadata.sim_type,
+            metadata.speeds_per_lane[0],
+            metadata.speeds_per_lane[1],
+            metadata.speeds_per_lane[2]
         );
 
         file.write_all(metadata.as_bytes()).unwrap();

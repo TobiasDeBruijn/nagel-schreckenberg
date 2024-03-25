@@ -99,6 +99,7 @@ pub struct MetaData {
     pub num_simulations: usize,
     pub iterations_per_simulation: usize,
     pub sim_type: SimulationType,
+    pub speeds_per_lane: Vec<u8>,
 }
 
 pub struct SimulationWriter {
