@@ -2,6 +2,7 @@ use crate::typedef::{Position, Road, Vehicle, Velocity};
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 use std::cmp::min;
 use std::io::{stdout, Write};
+use colored::Colorize;
 
 impl Road {
     pub fn new(
@@ -168,7 +169,17 @@ impl Road {
                     .iter()
                     .find(|v| v.position.x == f && v.position.y == lane)
                 {
-                    Some(v) => v.velocity.into_inner().to_string(),
+                    Some(v) => {
+                        let text = v.velocity.into_inner().to_string();
+                        let color = match v.original_lane {
+                            0 => text.blue(),
+                            1 => text.green(),
+                            2 => text.red(),
+                            _ => unreachable!(),
+                        };
+
+                        format!("{color}")
+                    },
                     None => " ".to_string(),
                 }
             })
@@ -196,11 +207,11 @@ impl Road {
 
         let s = vec![
             SIDE_OF_ROAD_STR.repeat(self.len as usize),
-            self.pretty_print_lane(2, false) + "\t3",
+            format!("{}\t{}", self.pretty_print_lane(2, false), self.speed_per_lane[2].into_inner().to_string().red()),
             self.get_strides(),
-            self.pretty_print_lane(1, false) + "\t2",
+            format!("{}\t{}", self.pretty_print_lane(1, false), self.speed_per_lane[1].into_inner().to_string().green()),
             self.get_strides(),
-            self.pretty_print_lane(0, false) + "\t1",
+            format!("{}\t{}", self.pretty_print_lane(0, false), self.speed_per_lane[0].into_inner().to_string().blue()),
             SIDE_OF_ROAD_STR.repeat(self.len as usize),
         ]
         .join("\n");
@@ -231,12 +242,6 @@ impl Road {
         let v: Vec<_> = r.clone();
         r.dedup();
         println!("Unique vehicles: \t\t{}", v.len());
-
-        // if r.len() != v.len() {
-        //     v.sort();
-        //     dbg!(v);
-        //     panic!()
-        // }
 
         stdout().flush().expect("Flush stdout");
     }

@@ -16,6 +16,7 @@ impl Vehicle {
         let velocity = vel.unwrap();
 
         Self {
+            original_lane: position.y,
             position,
             velocity,
             move_left_chance,

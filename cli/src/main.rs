@@ -36,6 +36,9 @@ pub struct Args {
     l2: u8,
     #[clap(long)]
     l3: u8,
+    #[clap(long)]
+    #[clap(default_value = "false")]
+    pretty_print: bool,
 }
 
 #[derive(ValueEnum, Clone)]
@@ -66,7 +69,7 @@ fn main() -> Result<()> {
     let fmt = now.format("%Y-%m-%d_%H%M").to_string();
 
     let sim_type = match args.parameter_under_test {
-        ParameterUnderTest::Density => SimulationType::Density(0.01, 0.5, 0.001),
+        ParameterUnderTest::Density => SimulationType::Density(0.01, 0.5, 0.08),
         ParameterUnderTest::PDecel => SimulationType::Deceleration(0.01, 1.0, 0.001),
         ParameterUnderTest::PLaneChange => SimulationType::LaneChange(0.01, 1.0, 0.001),
     };
@@ -84,6 +87,7 @@ fn main() -> Result<()> {
         SimulationWriter::new(&file_name),
         args.verbose,
         vec![args.l1, args.l2, args.l3],
+        args.pretty_print,
     );
 
     // Construct the MetaData

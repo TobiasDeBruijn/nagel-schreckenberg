@@ -12,6 +12,7 @@ impl SimulationsHandler {
         simulation_writer: SimulationWriter,
         verbose: bool,
         lane_speeds: Vec<u8>,
+        pretty_print: bool,
     ) -> Self {
         Self {
             num_simulations,
@@ -19,7 +20,8 @@ impl SimulationsHandler {
             sim_type,
             simulation_writer,
             verbose,
-            lane_speeds
+            lane_speeds,
+            pretty_print,
         }
     }
 
@@ -50,7 +52,7 @@ impl SimulationsHandler {
                         true,
                         true,
                     );
-                    let iteration_info = run_iterations(iteration, iterations_per_simulation, road);
+                    let iteration_info = run_iterations(iteration, iterations_per_simulation, road, self.pretty_print);
                     iteration_infos.push(iteration_info);
                 }
             }
@@ -67,7 +69,7 @@ impl SimulationsHandler {
                         true,
                         true,
                     );
-                    let iteration_info = run_iterations(iteration, iterations_per_simulation, road);
+                    let iteration_info = run_iterations(iteration, iterations_per_simulation, road, self.pretty_print);
                     iteration_infos.push(iteration_info);
                 }
             }
@@ -84,7 +86,7 @@ impl SimulationsHandler {
                         true,
                         true,
                     );
-                    let iteration_info = run_iterations(iteration, iterations_per_simulation, road);
+                    let iteration_info = run_iterations(iteration, iterations_per_simulation, road, self.pretty_print);
                     iteration_infos.push(iteration_info);
                 }
             }

@@ -20,6 +20,7 @@ impl SubAssign<u32> for Velocity {
 
 #[derive(Debug, Clone)]
 pub struct Vehicle {
+    pub original_lane: u8,
     pub position: Position,
     pub velocity: Velocity,
     pub move_left_chance: f32,
@@ -136,5 +137,6 @@ pub struct SimulationsHandler {
     pub sim_type: SimulationType,
     pub simulation_writer: SimulationWriter,
     pub verbose: bool,
-    pub lane_speeds: Vec<u8>
+    pub lane_speeds: Vec<u8>,
+    pub pretty_print: bool,
 }
