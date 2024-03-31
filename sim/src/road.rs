@@ -222,22 +222,6 @@ impl Road {
 
         println!("Total vehicles: \t\t{}", self.vehicles.len());
 
-        let mut r = self
-            .vehicles
-            .iter()
-            .map(|f| (f.position.x, f.position.y))
-            .collect::<Vec<_>>();
-
-        let v: Vec<_> = r.clone();
-        r.dedup();
-        println!("Unique vehicles: \t\t{}", v.len());
-
-        // if r.len() != v.len() {
-        //     v.sort();
-        //     dbg!(v);
-        //     panic!()
-        // }
-
         stdout().flush().expect("Flush stdout");
     }
 

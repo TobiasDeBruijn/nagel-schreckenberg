@@ -31,11 +31,17 @@ pub struct Args {
     #[clap(default_value = "100")]
     road_len: u8,
     #[clap(long)]
+    #[clap(default_value = "5")]
     l1: u8,
     #[clap(long)]
+    #[clap(default_value = "5")]
     l2: u8,
     #[clap(long)]
+    #[clap(default_value = "5")]
     l3: u8,
+    #[clap(long, short)]
+    #[clap(default_value = "")]
+    output_name: String,
 }
 
 #[derive(ValueEnum, Clone)]
@@ -66,15 +72,26 @@ fn main() -> Result<()> {
     let fmt = now.format("%Y-%m-%d_%H%M").to_string();
 
     let sim_type = match args.parameter_under_test {
-        ParameterUnderTest::Density => SimulationType::Density(0.01, 0.5, 0.001),
+        ParameterUnderTest::Density => SimulationType::Density(0.01, 0.5, 0.003333333),
         ParameterUnderTest::PDecel => SimulationType::Deceleration(0.01, 1.0, 0.001),
         ParameterUnderTest::PLaneChange => SimulationType::LaneChange(0.01, 1.0, 0.001),
     };
 
-    let file_name = match args.parameter_under_test {
-        ParameterUnderTest::Density => format!("density_{fmt}.csv"),
-        ParameterUnderTest::PDecel => format!("p_decel_{fmt}.csv"),
-        ParameterUnderTest::PLaneChange => format!("p_lane_change_{fmt}.csv"),
+    // let mut file_name = match args.parameter_under_test {
+    //     ParameterUnderTest::Density => format!("density_{fmt}.csv"),
+    //     ParameterUnderTest::PDecel => format!("p_decel_{fmt}.csv"),
+    //     ParameterUnderTest::PLaneChange => format!("p_lane_change_{fmt}.csv"),
+    // };
+
+    let file_name = if args.output_name != "" {
+        let output_name = args.output_name;
+        format!("{output_name}.csv")
+    } else {
+        match args.parameter_under_test {
+            ParameterUnderTest::Density => format!("density_{fmt}.csv"),
+            ParameterUnderTest::PDecel => format!("p_decel_{fmt}.csv"),
+            ParameterUnderTest::PLaneChange => format!("p_lane_change_{fmt}.csv"),
+        }
     };
 
     let simulation_handler = SimulationsHandler::new(
@@ -92,10 +109,19 @@ fn main() -> Result<()> {
         num_simulations: args.simulations,
         iterations_per_simulation: args.iterations,
         sim_type,
-        speeds_per_lane: vec![args.l1, args.l2, args.l3]
+        speeds_per_lane: vec![args.l1, args.l2, args.l3],
     };
 
+    let start = std::time::Instant::now();
+
     let iteration_infos = simulation_handler.run_simulations();
+
+    let duration = start.elapsed();
+
     simulation_handler.save_simulation_results(&iteration_infos, &metadata);
+
+    if args.verbose {
+        println!("Simulation took {:?}", duration);
+    }
     Ok(())
 }

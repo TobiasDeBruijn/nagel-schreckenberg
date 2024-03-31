@@ -8,6 +8,7 @@ use crate::{
 pub fn run_iterations(sim_nr: usize, iterations: usize, mut road: Road) -> IterationInfo {
     let start = Instant::now();
     for _ in 0..iterations {
+        // road.pretty_print();
         road = step(road);
     }
 
