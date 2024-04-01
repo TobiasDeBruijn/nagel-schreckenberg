@@ -77,12 +77,6 @@ fn main() -> Result<()> {
         ParameterUnderTest::PLaneChange => SimulationType::LaneChange(0.01, 1.0, 0.001),
     };
 
-    // let mut file_name = match args.parameter_under_test {
-    //     ParameterUnderTest::Density => format!("density_{fmt}.csv"),
-    //     ParameterUnderTest::PDecel => format!("p_decel_{fmt}.csv"),
-    //     ParameterUnderTest::PLaneChange => format!("p_lane_change_{fmt}.csv"),
-    // };
-
     let file_name = if args.output_name != "" {
         let output_name = args.output_name;
         format!("{output_name}.csv")
@@ -93,6 +87,12 @@ fn main() -> Result<()> {
             ParameterUnderTest::PLaneChange => format!("p_lane_change_{fmt}.csv"),
         }
     };
+
+    //Check if the output file already exists or if the path is invalid
+    if std::path::Path::new(&file_name).exists() {
+        eprintln!("Output file already exists. Please choose a different name.");
+        std::process::exit(1);
+    }
 
     let simulation_handler = SimulationsHandler::new(
         args.simulations,

@@ -3,6 +3,7 @@ use crate::{
     road::create_road,
     typedef::{IterationInfo, MetaData, SimulationType, SimulationWriter, SimulationsHandler},
 };
+use indicatif::{ProgressBar, ProgressStyle};
 
 impl SimulationsHandler {
     pub fn new(
@@ -39,7 +40,16 @@ impl SimulationsHandler {
         match sim_type {
             SimulationType::Density(start, end, step) => {
                 let float_range = float_range_step(start, end, step);
+
+                let bar = ProgressBar::new(float_range.len() as u64);
+
+                //set width of progress bar
+                bar.set_style(ProgressStyle::with_template("[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {msg}")
+                    .unwrap()
+                    .progress_chars("##-"));
+
                 for i in float_range {
+                    bar.inc(1);
                     iteration += 1;
                     let road = create_road(
                         road_length,
@@ -53,10 +63,15 @@ impl SimulationsHandler {
                     let iteration_info = run_iterations(iteration, iterations_per_simulation, road);
                     iteration_infos.push(iteration_info);
                 }
+
+                bar.finish();
             }
             SimulationType::LaneChange(start, end, step) => {
                 let float_range = float_range_step(start, end, step);
+                let bar = ProgressBar::new(float_range.len() as u64);
+
                 for i in float_range {
+                    bar.inc(1);
                     iteration += 1;
                     let road = create_road(
                         road_length,
@@ -70,10 +85,16 @@ impl SimulationsHandler {
                     let iteration_info = run_iterations(iteration, iterations_per_simulation, road);
                     iteration_infos.push(iteration_info);
                 }
+
+                bar.finish();
             }
             SimulationType::Deceleration(start, end, step) => {
                 let float_range = float_range_step(start, end, step);
+
+                let bar = ProgressBar::new(float_range.len() as u64);
+
                 for i in float_range {
+                    bar.inc(1);
                     iteration += 1;
                     let road = create_road(
                         road_length,
@@ -87,6 +108,8 @@ impl SimulationsHandler {
                     let iteration_info = run_iterations(iteration, iterations_per_simulation, road);
                     iteration_infos.push(iteration_info);
                 }
+
+                bar.finish();
             }
         };
 
@@ -121,6 +144,8 @@ impl SimulationsHandler {
 
         let num_of_rows = sims[0].len();
 
+
+
         for i in 0..num_of_rows {
             let mut sum_time: f32 = 0.0;
             let mut sum_speed: f32 = 0.0;
@@ -144,7 +169,7 @@ impl SimulationsHandler {
                 sum_flow += current_sim_flow;
             }
 
-            let average_time = sum_time / self.num_simulations as f32;
+            // let average_time = sum_time / self.num_simulations as f32;
             let average_speed = sum_speed / self.num_simulations as f32;
             let average_speed_per_lane = vec![
                 sum_speed_per_lane[0] / self.num_simulations as f32,
@@ -154,7 +179,7 @@ impl SimulationsHandler {
             let average_flow = sum_flow / self.num_simulations as f32;
 
             let average_info = iter_info.clone().add_averages_to_info(
-                average_time,
+                sum_time,
                 average_speed,
                 average_speed_per_lane,
                 average_flow,

@@ -1,0 +1,5 @@
+Road Length: 100
+Number of Simulations: 50
+Iterations per Simulation: 100
+Simulation Type: Density: 0.01 to 0.5 by 0.003333333
+Speeds per lane: 2 5 5
