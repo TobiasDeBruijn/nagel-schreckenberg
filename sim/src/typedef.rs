@@ -133,8 +133,10 @@ impl std::fmt::Debug for SimulationType {
 pub struct SimulationsHandler {
     pub num_simulations: usize,
     pub iterations_per_simulation: usize,
+    pub deceleration_probability: f32,
+    pub lane_change_probability: f32,
     pub sim_type: SimulationType,
     pub simulation_writer: SimulationWriter,
     pub verbose: bool,
-    pub lane_speeds: Vec<u8>
+    pub lane_speeds: Vec<u8>,
 }

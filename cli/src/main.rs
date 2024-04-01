@@ -42,6 +42,12 @@ pub struct Args {
     #[clap(long, short)]
     #[clap(default_value = "")]
     output_name: String,
+    #[clap(short, long)]
+    #[clap(default_value = "0.4")]
+    p_decel: f32,
+    #[clap(short, long)]
+    #[clap(default_value = "0.8")]
+    p_lane_change: f32,
 }
 
 #[derive(ValueEnum, Clone)]
@@ -62,6 +68,8 @@ fn main() -> Result<()> {
             set_var("RUST_LOG", "INFO");
         }
     }
+
+    println!("Path: {}", args.output_name);
 
     registry()
         .with(layer().compact())
@@ -97,6 +105,8 @@ fn main() -> Result<()> {
     let simulation_handler = SimulationsHandler::new(
         args.simulations,
         args.iterations,
+        args.p_decel,
+        args.p_lane_change,
         sim_type.clone(),
         SimulationWriter::new(&file_name),
         args.verbose,

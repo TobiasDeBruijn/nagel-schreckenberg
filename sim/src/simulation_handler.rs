@@ -9,6 +9,8 @@ impl SimulationsHandler {
     pub fn new(
         num_simulations: usize,
         iterations_per_simulation: usize,
+        deceleration_probability: f32,
+        lane_change_probability: f32,
         sim_type: SimulationType,
         simulation_writer: SimulationWriter,
         verbose: bool,
@@ -17,10 +19,12 @@ impl SimulationsHandler {
         Self {
             num_simulations,
             iterations_per_simulation,
+            deceleration_probability,
+            lane_change_probability,
             sim_type,
             simulation_writer,
             verbose,
-            lane_speeds
+            lane_speeds,
         }
     }
 
@@ -30,9 +34,9 @@ impl SimulationsHandler {
         sim_type: SimulationType,
     ) -> Vec<IterationInfo> {
         let road_length = 100;
-        let density = 0.3;
-        let deceleration_probability = 0.4;
-        let lane_change_probability = 0.8;
+        let standard_density = 0.3;
+        // let deceleration_probability = 0.4;
+        // let lane_change_probability = 0.8;
 
         let mut iteration = 0;
         let mut iteration_infos = Vec::new();
@@ -44,9 +48,13 @@ impl SimulationsHandler {
                 let bar = ProgressBar::new(float_range.len() as u64);
 
                 //set width of progress bar
-                bar.set_style(ProgressStyle::with_template("[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {msg}")
+                bar.set_style(
+                    ProgressStyle::with_template(
+                        "[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {msg}",
+                    )
                     .unwrap()
-                    .progress_chars("##-"));
+                    .progress_chars("##-"),
+                );
 
                 for i in float_range {
                     bar.inc(1);
@@ -55,8 +63,8 @@ impl SimulationsHandler {
                         road_length,
                         i,
                         self.lane_speeds.clone(),
-                        deceleration_probability,
-                        lane_change_probability,
+                        self.deceleration_probability,
+                        self.lane_change_probability,
                         true,
                         true,
                     );
@@ -75,9 +83,9 @@ impl SimulationsHandler {
                     iteration += 1;
                     let road = create_road(
                         road_length,
-                        density,
+                        standard_density,
                         self.lane_speeds.clone(),
-                        deceleration_probability,
+                        self.deceleration_probability,
                         i,
                         true,
                         true,
@@ -98,10 +106,10 @@ impl SimulationsHandler {
                     iteration += 1;
                     let road = create_road(
                         road_length,
-                        density,
+                        standard_density,
                         self.lane_speeds.clone(),
                         i,
-                        deceleration_probability,
+                        self.deceleration_probability,
                         true,
                         true,
                     );
@@ -143,8 +151,6 @@ impl SimulationsHandler {
         let mut average_infos: Vec<IterationInfo> = Vec::new();
 
         let num_of_rows = sims[0].len();
-
-
 
         for i in 0..num_of_rows {
             let mut sum_time: f32 = 0.0;
