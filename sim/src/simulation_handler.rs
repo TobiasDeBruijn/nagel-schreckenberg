@@ -3,11 +3,14 @@ use crate::{
     road::create_road,
     typedef::{IterationInfo, MetaData, SimulationType, SimulationWriter, SimulationsHandler},
 };
+use indicatif::{ProgressBar, ProgressStyle};
 
 impl SimulationsHandler {
     pub fn new(
         num_simulations: usize,
         iterations_per_simulation: usize,
+        deceleration_probability: f32,
+        lane_change_probability: f32,
         sim_type: SimulationType,
         simulation_writer: SimulationWriter,
         verbose: bool,
@@ -17,6 +20,8 @@ impl SimulationsHandler {
         Self {
             num_simulations,
             iterations_per_simulation,
+            deceleration_probability,
+            lane_change_probability,
             sim_type,
             simulation_writer,
             verbose,
@@ -31,9 +36,9 @@ impl SimulationsHandler {
         sim_type: SimulationType,
     ) -> Vec<IterationInfo> {
         let road_length = 100;
-        let density = 0.3;
-        let deceleration_probability = 0.4;
-        let lane_change_probability = 0.8;
+        let standard_density = 0.3;
+        // let deceleration_probability = 0.4;
+        // let lane_change_probability = 0.8;
 
         let mut iteration = 0;
         let mut iteration_infos = Vec::new();
@@ -41,30 +46,48 @@ impl SimulationsHandler {
         match sim_type {
             SimulationType::Density(start, end, step) => {
                 let float_range = float_range_step(start, end, step);
+
+                let bar = ProgressBar::new(float_range.len() as u64);
+
+                //set width of progress bar
+                bar.set_style(
+                    ProgressStyle::with_template(
+                        "[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {msg}",
+                    )
+                    .unwrap()
+                    .progress_chars("##-"),
+                );
+
                 for i in float_range {
+                    bar.inc(1);
                     iteration += 1;
                     let road = create_road(
                         road_length,
                         i,
                         self.lane_speeds.clone(),
-                        deceleration_probability,
-                        lane_change_probability,
+                        self.deceleration_probability,
+                        self.lane_change_probability,
                         true,
                         true,
                     );
                     let iteration_info = run_iterations(iteration, iterations_per_simulation, road, self.pretty_print);
                     iteration_infos.push(iteration_info);
                 }
+
+                bar.finish();
             }
             SimulationType::LaneChange(start, end, step) => {
                 let float_range = float_range_step(start, end, step);
+                let bar = ProgressBar::new(float_range.len() as u64);
+
                 for i in float_range {
+                    bar.inc(1);
                     iteration += 1;
                     let road = create_road(
                         road_length,
-                        density,
+                        standard_density,
                         self.lane_speeds.clone(),
-                        deceleration_probability,
+                        self.deceleration_probability,
                         i,
                         true,
                         true,
@@ -72,23 +95,31 @@ impl SimulationsHandler {
                     let iteration_info = run_iterations(iteration, iterations_per_simulation, road, self.pretty_print);
                     iteration_infos.push(iteration_info);
                 }
+
+                bar.finish();
             }
             SimulationType::Deceleration(start, end, step) => {
                 let float_range = float_range_step(start, end, step);
+
+                let bar = ProgressBar::new(float_range.len() as u64);
+
                 for i in float_range {
+                    bar.inc(1);
                     iteration += 1;
                     let road = create_road(
                         road_length,
-                        density,
+                        standard_density,
                         self.lane_speeds.clone(),
                         i,
-                        deceleration_probability,
+                        self.deceleration_probability,
                         true,
                         true,
                     );
                     let iteration_info = run_iterations(iteration, iterations_per_simulation, road, self.pretty_print);
                     iteration_infos.push(iteration_info);
                 }
+
+                bar.finish();
             }
         };
 
@@ -146,7 +177,7 @@ impl SimulationsHandler {
                 sum_flow += current_sim_flow;
             }
 
-            let average_time = sum_time / self.num_simulations as f32;
+            // let average_time = sum_time / self.num_simulations as f32;
             let average_speed = sum_speed / self.num_simulations as f32;
             let average_speed_per_lane = vec![
                 sum_speed_per_lane[0] / self.num_simulations as f32,
@@ -156,7 +187,7 @@ impl SimulationsHandler {
             let average_flow = sum_flow / self.num_simulations as f32;
 
             let average_info = iter_info.clone().add_averages_to_info(
-                average_time,
+                sum_time,
                 average_speed,
                 average_speed_per_lane,
                 average_flow,
